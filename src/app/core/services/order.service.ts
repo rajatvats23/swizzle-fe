@@ -4,21 +4,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-
-export interface Order {
-  _id: string;
-  orderNumber: string;
-  phoneNumber: string;
-  customerName?: string;
-  deliveryAddress?: {
-    text: string;
-    lat: number;
-    lng: number;
-  };
-  items: any[];
-  status: string;
-  total: number;
-}
+import { Order, CartItem } from '../models/order.model';
 
 export interface OtpResponse {
   success: boolean;
@@ -36,6 +22,7 @@ export class OrderService {
   private apiUrl = `${environment.apiUrl}/orders`;
   private otpUrl = `${environment.apiUrl}/otp`;
 
+  // Existing methods
   getOrder(orderId: string): Observable<Order> {
     return this.http.get<Order>(`${this.apiUrl}/${orderId}`);
   }
@@ -66,6 +53,40 @@ export class OrderService {
     return this.http.post<{ success: boolean }>(
       `${environment.apiUrl}/receptionist/orders/send-link`,
       { orderId, phoneNumber }
+    );
+  }
+
+  // ✅ NEW: Cart Management APIs
+  
+  /**
+   * Add item to cart (backend order)
+   */
+  addItemToOrder(orderId: string, item: CartItem): Observable<Order> {
+    return this.http.post<Order>(`${this.apiUrl}/${orderId}/items`, item);
+  }
+
+  /**
+   * Update item quantity in cart
+   */
+  updateItemQuantity(orderId: string, itemId: string, quantity: number): Observable<Order> {
+    return this.http.patch<Order>(`${this.apiUrl}/${orderId}/items/${itemId}`, { quantity });
+  }
+
+  /**
+   * Remove item from cart
+   */
+  removeItemFromOrder(orderId: string, itemId: string): Observable<Order> {
+    return this.http.delete<Order>(`${this.apiUrl}/${orderId}/items/${itemId}`);
+  }
+
+  /**
+   * Checkout - Creates Stripe session
+   * Note: This endpoint is MISSING in backend - needs to be implemented
+   */
+  checkout(orderId: string, items: CartItem[], total: number): Observable<{ stripeSessionUrl: string }> {
+    return this.http.post<{ stripeSessionUrl: string }>(
+      `${this.apiUrl}/${orderId}/checkout`,
+      { items, total }
     );
   }
 }

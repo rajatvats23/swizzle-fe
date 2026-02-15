@@ -3,6 +3,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { GoogleMap, MapMarker } from '@angular/google-maps';
 import { OrderService } from '../../../core/services/order.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-address',
@@ -37,7 +38,7 @@ export class AddressComponent implements OnInit {
   };
 
   ngOnInit() {
-    this.orderId = this.route.snapshot.paramMap.get('orderId') || '';
+    this.orderId = this.route.snapshot.paramMap.get('id') || '';
 
     // Load Google Maps API
     if (!window.google) {
@@ -50,7 +51,7 @@ export class AddressComponent implements OnInit {
 
   loadGoogleMapsScript() {
     const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyCUXDlJk2LX7Qqo24pVild7an36bHMyycA
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${environment.GOOGLE_MAPS_API_KEY}
 &libraries=places`;
     script.async = true;
     script.defer = true;

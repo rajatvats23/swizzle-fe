@@ -1,3 +1,19 @@
+// src/app/core/models/order.model.ts
+
+export interface CartItem {
+  _id?: string;  // ✅ ADDED: Backend item ID (optional, only set after sync)
+  productId: string;
+  productName: string;
+  basePrice: number;
+  quantity: number;
+  selectedAddons: {
+    addonId: string;
+    addonName: string;
+    addonPrice: number;
+  }[];
+  itemTotal: number;
+}
+
 export interface Order {
   _id: string;
   orderNumber: string;
@@ -13,19 +29,6 @@ export interface Order {
   total: number;
   status: OrderStatus;
   isAssistedOrder: boolean;
-}
-
-export interface CartItem {
-  productId: string;
-  productName: string;
-  basePrice: number;
-  quantity: number;
-  selectedAddons: {
-    addonId: string;
-    addonName: string;
-    addonPrice: number;
-  }[];
-  itemTotal: number;
 }
 
 export enum OrderStatus {

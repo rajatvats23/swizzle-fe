@@ -70,7 +70,7 @@ export class CustomerFlowComponent implements OnInit {
   });
 
   ngOnInit() {
-    this.orderId = this.route.snapshot.paramMap.get('orderId') || '';
+    this.orderId = this.route.snapshot.paramMap.get('id') || '';
     this.loadMenu();
   }
 

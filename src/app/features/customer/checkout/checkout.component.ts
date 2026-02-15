@@ -29,7 +29,7 @@ export class CheckoutComponent implements OnInit {
   JSON: any = JSON;
 
   ngOnInit() {
-    this.orderId = this.route.snapshot.paramMap.get('orderId') || '';
+    this.orderId = this.route.snapshot.paramMap.get('id') || '';
   }
 
   proceedToPayment() {
