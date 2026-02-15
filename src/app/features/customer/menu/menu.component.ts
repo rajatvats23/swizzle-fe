@@ -73,7 +73,7 @@ export class MenuComponent implements OnInit {
     const product = this.selectedProduct();
     if (!product) return [];
     return this.allAddons().filter(a => 
-      product.allowedAddonIds.includes(a._id) && a.isActive
+      product.allowedAddonIds.includes(a._id)
     );
   });
 
@@ -84,7 +84,16 @@ export class MenuComponent implements OnInit {
   });
 
   ngOnInit() {
+    // ✅ Fixed: Route param is 'id' not 'orderId'
     this.orderId = this.route.snapshot.paramMap.get('id') || '';
+    
+    if (!this.orderId) {
+      console.error('❌ No orderId found in route');
+      this.router.navigate(['/']);
+      return;
+    }
+    
+    console.log('✅ Menu component initialized with orderId:', this.orderId);
     this.loadMenu();
     this.loadCart();
   }
@@ -306,5 +315,9 @@ export class MenuComponent implements OnInit {
 
   decreaseQuantityModal() {
     this.quantity.update(q => Math.max(1, q - 1));
+  }
+
+  hasSingleTypeAddon(): boolean {
+    return this.productAddons().some(a => a.type === 'single');
   }
 }
