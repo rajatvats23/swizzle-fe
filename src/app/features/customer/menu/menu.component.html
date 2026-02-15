@@ -1,0 +1,175 @@
+<div class="min-h-screen bg-gray-50">
+  
+  <!-- Header with Cart -->
+  <header class="sticky top-0 bg-white border-b z-20 px-4 py-3">
+    <div class="max-w-6xl mx-auto flex items-center justify-between">
+      <button (click)="goBack()" class="p-2 hover:bg-gray-100 rounded-full">
+        <span class="material-symbols-outlined">arrow_back</span>
+      </button>
+      <h1 class="text-xl font-bold">Menu</h1>
+      <button 
+        (click)="goToCheckout()"
+        class="relative p-2 hover:bg-gray-100 rounded-full"
+      >
+        <span class="material-symbols-outlined">shopping_cart</span>
+        @if (cartService.itemCount() > 0) {
+          <span class="absolute -top-1 -right-1 bg-primary text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+            {{ cartService.itemCount() }}
+          </span>
+        }
+      </button>
+    </div>
+  </header>
+
+  <!-- Categories Tab -->
+  <div class="sticky top-14 bg-white border-b z-10 px-4 py-3 overflow-x-auto">
+    <div class="flex gap-2 max-w-6xl mx-auto">
+      @for (category of categories(); track category._id) {
+        <button
+          (click)="selectCategory(category._id)"
+          [class.bg-primary]="selectedCategory() === category._id"
+          [class.text-white]="selectedCategory() === category._id"
+          [class.bg-gray-100]="selectedCategory() !== category._id"
+          class="px-4 py-2 rounded-full font-semibold text-sm whitespace-nowrap transition-all"
+        >
+          {{ category.name }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Products Grid -->
+  <main class="max-w-6xl mx-auto px-4 py-6">
+    @if (loading()) {
+      <div class="text-center py-12">
+        <p class="text-gray-500">Loading products...</p>
+      </div>
+    } @else {
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        @for (product of products(); track product._id) {
+          <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+            
+            @if (product.imageUrl) {
+              <img 
+                [src]="product.imageUrl" 
+                [alt]="product.name"
+                class="w-full h-48 object-cover"
+              />
+            } @else {
+              <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
+                <span class="material-symbols-outlined text-gray-400 text-5xl">restaurant</span>
+              </div>
+            }
+
+            <div class="p-4">
+              <h3 class="font-bold text-lg mb-1">{{ product.name }}</h3>
+              <p class="text-sm text-gray-600 mb-3">{{ product.description }}</p>
+              
+              <div class="flex items-center justify-between">
+                <span class="text-xl font-bold text-primary">₹{{ product.basePrice }}</span>
+                <button
+                  (click)="openAddonModal(product)"
+                  class="bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary/90 transition-all"
+                >
+                  Add
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </main>
+
+  <!-- Addon Modal -->
+  @if (showAddonModal() && selectedProduct()) {
+    <div class="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-4">
+      <div class="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        
+        <!-- Modal Header -->
+        <div class="sticky top-0 bg-white border-b p-4 flex items-center justify-between">
+          <h2 class="text-xl font-bold">{{ selectedProduct()!.name }}</h2>
+          <button (click)="closeAddonModal()" class="p-2 hover:bg-gray-100 rounded-full">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="p-6 space-y-6">
+          
+          <!-- Addons -->
+          @if (selectedProduct()!.allowedAddons && selectedProduct()!.allowedAddons!.length > 0) {
+            <div>
+              <h3 class="font-semibold mb-3">Customize</h3>
+              <div class="space-y-2">
+                @for (addon of selectedProduct()!.allowedAddons; track addon._id) {
+                  <label class="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                    <div class="flex items-center gap-3">
+                      <input
+                        type="checkbox"
+                        [checked]="isAddonSelected(addon._id)"
+                        (change)="toggleAddon(addon._id, addon.type)"
+                        class="w-5 h-5 text-primary rounded focus:ring-2 focus:ring-primary"
+                      />
+                      <span class="font-medium">{{ addon.name }}</span>
+                    </div>
+                    @if (addon.price > 0) {
+                      <span class="text-gray-600">+₹{{ addon.price }}</span>
+                    }
+                  </label>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Quantity -->
+          <div>
+            <h3 class="font-semibold mb-3">Quantity</h3>
+            <div class="flex items-center gap-4">
+              <button
+                (click)="decrementQuantity()"
+                class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200"
+              >
+                <span class="material-symbols-outlined">remove</span>
+              </button>
+              <span class="text-xl font-bold w-12 text-center">{{ quantity() }}</span>
+              <button
+                (click)="incrementQuantity()"
+                class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200"
+              >
+                <span class="material-symbols-outlined">add</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="sticky bottom-0 bg-white border-t p-4">
+          <button
+            (click)="addToCart()"
+            class="w-full bg-primary text-white py-3.5 rounded-lg font-semibold flex items-center justify-between px-6 hover:bg-primary/90"
+          >
+            <span>Add to Cart</span>
+            <span class="font-bold">₹{{ calculatePrice() }}</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  }
+
+  <!-- Floating Cart Button (Mobile) -->
+  @if (cartService.itemCount() > 0) {
+    <div class="fixed bottom-6 right-6 sm:hidden">
+      <button
+        (click)="goToCheckout()"
+        class="bg-primary text-white rounded-full shadow-lg px-6 py-4 flex items-center gap-2 hover:bg-primary/90"
+      >
+        <span class="material-symbols-outlined">shopping_cart</span>
+        <span class="font-bold">{{ cartService.itemCount() }} items</span>
+        <span class="font-bold">₹{{ cartService.total() }}</span>
+      </button>
+    </div>
+  }
+
+</div>

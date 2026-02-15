@@ -1,11 +1,15 @@
 // src/app/core/services/menu.service.ts
+
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Category, Product, Addon } from '../models/product.model';
 import { environment } from '../../../environments/environment';
+// Import existing models
+import { Category, Product, Addon } from '../models/product.model';
 
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root'
+})
 export class MenuService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/menu`;
