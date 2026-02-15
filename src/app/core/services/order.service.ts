@@ -14,6 +14,10 @@ export interface OtpVerifyResponse {
   verified: boolean;
 }
 
+export interface CheckoutResponse {
+  stripeSessionUrl: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -22,7 +26,6 @@ export class OrderService {
   private apiUrl = `${environment.apiUrl}/orders`;
   private otpUrl = `${environment.apiUrl}/otp`;
 
-  // Existing methods
   getOrder(orderId: string): Observable<Order> {
     return this.http.get<Order>(`${this.apiUrl}/${orderId}`);
   }
@@ -56,37 +59,26 @@ export class OrderService {
     );
   }
 
-  // ✅ NEW: Cart Management APIs
-  
-  /**
-   * Add item to cart (backend order)
-   */
+  // Cart Management APIs
   addItemToOrder(orderId: string, item: CartItem): Observable<Order> {
     return this.http.post<Order>(`${this.apiUrl}/${orderId}/items`, item);
   }
 
-  /**
-   * Update item quantity in cart
-   */
   updateItemQuantity(orderId: string, itemId: string, quantity: number): Observable<Order> {
     return this.http.patch<Order>(`${this.apiUrl}/${orderId}/items/${itemId}`, { quantity });
   }
 
-  /**
-   * Remove item from cart
-   */
   removeItemFromOrder(orderId: string, itemId: string): Observable<Order> {
     return this.http.delete<Order>(`${this.apiUrl}/${orderId}/items/${itemId}`);
   }
 
   /**
-   * Checkout - Creates Stripe session
-   * Note: This endpoint is MISSING in backend - needs to be implemented
+   * ✅ UPDATED: Checkout - Only sends total, backend validates against DB
    */
-  checkout(orderId: string, items: CartItem[], total: number): Observable<{ stripeSessionUrl: string }> {
-    return this.http.post<{ stripeSessionUrl: string }>(
+  checkout(orderId: string, total: number): Observable<CheckoutResponse> {
+    return this.http.post<CheckoutResponse>(
       `${this.apiUrl}/${orderId}/checkout`,
-      { items, total }
+      { total }
     );
   }
 }
