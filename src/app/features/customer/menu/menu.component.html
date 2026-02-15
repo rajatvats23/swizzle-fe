@@ -5,21 +5,13 @@
       <button (click)="goBack()" class="back-button">
         <span class="material-symbols-outlined">arrow_back</span>
       </button>
-      
-      <input
-        [(ngModel)]="searchQuery"
-        (input)="onSearch()"
-        placeholder="Search dishes..."
-        class="search-input"
-      />
-      
-      <button 
-        (click)="showCart.set(true)"
-        class="cart-button"
-      >
+
+      <input [(ngModel)]="searchQuery" (input)="onSearch()" placeholder="Search dishes..." class="search-input" />
+
+      <button (click)="showCart.set(true)" class="cart-button">
         <span class="material-symbols-outlined">shopping_cart</span>
         @if (cartCount() > 0) {
-          <span class="cart-badge">{{ cartCount() }}</span>
+        <span class="cart-badge">{{ cartCount() }}</span>
         }
       </button>
     </div>
@@ -29,13 +21,9 @@
   <nav class="categories-nav">
     <div class="categories-scroll">
       @for (cat of categories(); track cat._id) {
-        <button
-          (click)="selectCategory(cat._id)"
-          [class.active]="selectedCategory() === cat._id"
-          class="category-pill"
-        >
-          {{ cat.name }}
-        </button>
+      <button (click)="selectCategory(cat._id)" [class.active]="selectedCategory() === cat._id" class="category-pill">
+        {{ cat.name }}
+      </button>
       }
     </div>
   </nav>
@@ -43,237 +31,180 @@
   <!-- Products Grid -->
   <main class="products-main">
     @if (loading()) {
-      <div class="loading-state">
-        <p>Loading menu...</p>
-      </div>
+    <div class="loading-state">
+      <p>Loading menu...</p>
+    </div>
     } @else if (filteredProducts().length === 0) {
-      <div class="empty-state">
-        <span class="material-symbols-outlined">restaurant_menu</span>
-        <p>No products found</p>
-      </div>
+    <div class="empty-state">
+      <span class="material-symbols-outlined">restaurant_menu</span>
+      <p>No products found</p>
+    </div>
     } @else {
-      <div class="products-grid">
-        @for (product of filteredProducts(); track product._id) {
-          <div 
-            (click)="openAddonModal(product)"
-            class="product-card"
-          >
-            @if (product.imageUrl) {
-              <img 
-                [src]="product.imageUrl" 
-                [alt]="product.name" 
-                class="product-image"
-              />
-            } @else {
-              <div class="product-image-placeholder">
-                <span class="material-symbols-outlined">restaurant</span>
-              </div>
-            }
-            
-            <div class="product-info">
-              <h3 class="product-name">{{ product.name }}</h3>
-              <p class="product-description">{{ product.description }}</p>
-              
-              <div class="product-footer">
-                <span class="product-price">₹{{ product.basePrice }}</span>
-                <button class="add-button">
-                  <span class="material-symbols-outlined">add</span>
-                  Add
-                </button>
-              </div>
-            </div>
+    <div class="products-grid">
+      @for (product of filteredProducts(); track product._id) {
+      <div (click)="openAddonModal(product)" class="product-card">
+        <img [src]="product.imageUrl || 'assets/images/default.png'" [alt]="product.name" class="product-image" />
+
+        <div class="product-info">
+          <h3 class="product-name">{{ product.name }}</h3>
+          <p class="product-description">{{ product.description }}</p>
+
+          <div class="product-footer">
+            <span class="product-price">₹{{ product.basePrice }}</span>
+            <button class="add-button">
+              <span class="material-symbols-outlined">add</span>
+              Add
+            </button>
           </div>
-        }
+        </div>
       </div>
+      }
+    </div>
     }
   </main>
 
   <!-- Addon Modal -->
   @if (selectedProduct()) {
-    <div class="modal-overlay" (click)="closeModal()">
-      <div 
-        (click)="$event.stopPropagation()"
-        class="addon-modal"
-      >
-        <div class="modal-header">
-          <div class="modal-title-section">
-            <h2>{{ selectedProduct()!.name }}</h2>
-            <p class="modal-subtitle">{{ selectedProduct()!.description }}</p>
-            <p class="base-price">₹{{ currentPrice() }}</p>
-          </div>
-          @if (selectedProduct()!.imageUrl) {
-            <img 
-              [src]="selectedProduct()!.imageUrl" 
-              [alt]="selectedProduct()!.name"
-              class="modal-product-image"
-            />
-          }
+  <div class="modal-overlay" (click)="closeModal()">
+    <div (click)="$event.stopPropagation()" class="addon-modal">
+      <div class="modal-header">
+        <div class="modal-title-section">
+          <h2>{{ selectedProduct()!.name }}</h2>
+          <p class="modal-subtitle">{{ selectedProduct()!.description }}</p>
+          <p class="base-price">₹{{ currentPrice() }}</p>
         </div>
+        <img [src]="selectedProduct()!.imageUrl || 'assets/images/default.png'" [alt]="selectedProduct()!.name"
+          class="modal-product-image" />
+      </div>
 
-        <div class="modal-content">
-          @if (productAddons().length > 0) {
-            <div class="addons-section">
-              <h3>Customize</h3>
-              
-              <div class="addons-list">
-                @for (addon of productAddons(); track addon._id) {
-                  <label class="addon-item">
-                    <div class="addon-info">
-                      @if (addon.type === 'single') {
-                        <input 
-                          type="radio" 
-                          [name]="'addon-group'"
-                          [checked]="isAddonSelected(addon._id)"
-                          (change)="toggleAddon(addon, true)"
-                          class="addon-radio"
-                        />
-                      } @else {
-                        <input 
-                          type="checkbox"
-                          [checked]="isAddonSelected(addon._id)"
-                          (change)="toggleAddon(addon, false)"
-                          class="addon-checkbox"
-                        />
-                      }
-                      <span>{{ addon.name }}</span>
-                    </div>
-                    @if (addon.price > 0) {
-                      <span class="addon-price">+₹{{ addon.price }}</span>
-                    }
-                  </label>
+      <div class="modal-content">
+        @if (productAddons().length > 0) {
+        <div class="addons-section">
+          <h3>Customize</h3>
+
+          <div class="addons-list">
+            @for (addon of productAddons(); track addon._id) {
+            <label class="addon-item">
+              <div class="addon-info">
+                @if (addon.type === 'single') {
+                <input type="radio" [name]="'addon-group'" [checked]="isAddonSelected(addon._id)"
+                  (change)="toggleAddon(addon, true)" class="addon-radio" />
+                } @else {
+                <input type="checkbox" [checked]="isAddonSelected(addon._id)" (change)="toggleAddon(addon, false)"
+                  class="addon-checkbox" />
                 }
+                <span>{{ addon.name }}</span>
               </div>
-            </div>
-          }
-
-          <div class="quantity-section">
-            <h3>Quantity</h3>
-            <div class="quantity-controls">
-              <button 
-                (click)="decreaseQuantityModal()"
-                class="quantity-button"
-              >
-                <span class="material-symbols-outlined">remove</span>
-              </button>
-              <span class="quantity-value">{{ quantity() }}</span>
-              <button 
-                (click)="increaseQuantityModal()"
-                class="quantity-button"
-              >
-                <span class="material-symbols-outlined">add</span>
-              </button>
-            </div>
+              @if (addon.price > 0) {
+              <span class="addon-price">+₹{{ addon.price }}</span>
+              }
+            </label>
+            }
           </div>
         </div>
+        }
 
-        <div class="modal-footer">
-          <button 
-            (click)="addItemToCart()"
-            class="add-to-cart-button"
-          >
-            <span>Add to Cart</span>
-            <span class="divider">|</span>
-            <span>₹{{ currentPrice() * quantity() }}</span>
-          </button>
+        <div class="quantity-section">
+          <h3>Quantity</h3>
+          <div class="quantity-controls">
+            <button (click)="decreaseQuantityModal()" class="quantity-button">
+              <span class="material-symbols-outlined">remove</span>
+            </button>
+            <span class="quantity-value">{{ quantity() }}</span>
+            <button (click)="increaseQuantityModal()" class="quantity-button">
+              <span class="material-symbols-outlined">add</span>
+            </button>
+          </div>
         </div>
       </div>
+
+      <div class="modal-footer">
+        <button (click)="addItemToCart()" class="add-to-cart-button">
+          <span>Add to Cart</span>
+          <span class="divider">|</span>
+          <span>₹{{ currentPrice() * quantity() }}</span>
+        </button>
+      </div>
     </div>
+  </div>
   }
 
   <!-- Cart Modal -->
   @if (showCart()) {
-    <div class="modal-overlay" (click)="showCart.set(false)">
-      <div 
-        (click)="$event.stopPropagation()"
-        class="cart-modal"
-      >
-        <div class="cart-header">
-          <h2>Cart ({{ cartCount() }})</h2>
-          <button (click)="showCart.set(false)" class="close-button">
-            <span class="material-symbols-outlined">close</span>
-          </button>
-        </div>
+  <div class="modal-overlay" (click)="showCart.set(false)">
+    <div (click)="$event.stopPropagation()" class="cart-modal">
+      <div class="cart-header">
+        <h2>Cart ({{ cartCount() }})</h2>
+        <button (click)="showCart.set(false)" class="close-button">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
 
-        @if (cartItems().length === 0) {
-          <div class="cart-empty">
-            <span class="material-symbols-outlined">shopping_cart</span>
-            <p>Your cart is empty</p>
-          </div>
-        } @else {
-          <div class="cart-items">
-            @for (item of cartItems(); track item.productId + JSON.stringify(item.selectedAddons)) {
-              <div class="cart-item">
-                <div class="cart-item-info">
-                  <span class="cart-item-name">{{ item.productName }}</span>
-                  @if (item.selectedAddons.length > 0) {
-                    <p class="cart-item-addons">
-                      {{ getAddonNames(item.selectedAddons) }}
-                    </p>
-                  }
-                  <span class="cart-item-price">₹{{ item.itemTotal }}</span>
-                </div>
-                
-                <div class="cart-item-actions">
-                  <div class="cart-quantity-controls">
-                    <button 
-                      (click)="decreaseQuantity(item)"
-                      class="cart-quantity-button"
-                    >
-                      <span class="material-symbols-outlined">remove</span>
-                    </button>
-                    <span class="cart-quantity">{{ item.quantity }}</span>
-                    <button 
-                      (click)="increaseQuantity(item)"
-                      class="cart-quantity-button"
-                    >
-                      <span class="material-symbols-outlined">add</span>
-                    </button>
-                  </div>
-                  <button 
-                    (click)="removeItem(item)"
-                    class="cart-remove-button"
-                  >
-                    Remove
-                  </button>
-                </div>
-              </div>
+      @if (cartItems().length === 0) {
+      <div class="cart-empty">
+        <span class="material-symbols-outlined">shopping_cart</span>
+        <p>Your cart is empty</p>
+      </div>
+      } @else {
+      <div class="cart-items">
+        @for (item of cartItems(); track item.productId + JSON.stringify(item.selectedAddons)) {
+        <div class="cart-item">
+          <div class="cart-item-info">
+            <span class="cart-item-name">{{ item.productName }}</span>
+            @if (item.selectedAddons.length > 0) {
+            <p class="cart-item-addons">
+              {{ getAddonNames(item.selectedAddons) }}
+            </p>
             }
+            <span class="cart-item-price">₹{{ item.itemTotal }}</span>
           </div>
 
-          <div class="cart-footer">
-            <div class="cart-total">
-              <span class="total-label">Total</span>
-              <span class="total-amount">₹{{ cartTotal() }}</span>
+          <div class="cart-item-actions">
+            <div class="cart-quantity-controls">
+              <button (click)="decreaseQuantity(item)" class="cart-quantity-button">
+                <span class="material-symbols-outlined">remove</span>
+              </button>
+              <span class="cart-quantity">{{ item.quantity }}</span>
+              <button (click)="increaseQuantity(item)" class="cart-quantity-button">
+                <span class="material-symbols-outlined">add</span>
+              </button>
             </div>
-            <button 
-              (click)="proceedToCheckout()"
-              class="checkout-button"
-            >
-              Proceed to Checkout
-              <span class="material-symbols-outlined">arrow_forward</span>
+            <button (click)="removeItem(item)" class="cart-remove-button">
+              Remove
             </button>
           </div>
+        </div>
         }
       </div>
+
+      <div class="cart-footer">
+        <div class="cart-total">
+          <span class="total-label">Total</span>
+          <span class="total-amount">₹{{ cartTotal() }}</span>
+        </div>
+        <button (click)="proceedToCheckout()" class="checkout-button">
+          Proceed to Checkout
+          <span class="material-symbols-outlined">arrow_forward</span>
+        </button>
+      </div>
+      }
     </div>
+  </div>
   }
 
   <!-- Sticky Bottom Bar -->
   @if (cartCount() > 0 && !showCart()) {
-    <div class="sticky-bottom-bar">
-      <div class="bar-content">
-        <div class="bar-info">
-          <p class="bar-text">{{ cartCount() }} items · ₹{{ cartTotal() }}</p>
-          <p class="bar-subtext">Extra charges may apply</p>
-        </div>
-        <button 
-          (click)="showCart.set(true)"
-          class="view-cart-button"
-        >
-          View Cart
-          <span class="material-symbols-outlined">arrow_forward</span>
-        </button>
+  <div class="sticky-bottom-bar">
+    <div class="bar-content">
+      <div class="bar-info">
+        <p class="bar-text">{{ cartCount() }} items · ₹{{ cartTotal() }}</p>
+        <p class="bar-subtext">Extra charges may apply</p>
       </div>
+      <button (click)="showCart.set(true)" class="view-cart-button">
+        View Cart
+        <span class="material-symbols-outlined">arrow_forward</span>
+      </button>
     </div>
+  </div>
   }
 </div>
