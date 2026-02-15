@@ -46,7 +46,7 @@
       </div>
     } @else {
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        @for (product of products(); track product._id) {
+        @for (product of getFilteredProducts(); track product._id) {
           <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
             
             @if (product.imageUrl) {
@@ -97,12 +97,24 @@
         <!-- Modal Body -->
         <div class="p-6 space-y-6">
           
+          <!-- Product Image -->
+          @if (selectedProduct()!.imageUrl) {
+            <img 
+              [src]="selectedProduct()!.imageUrl" 
+              [alt]="selectedProduct()!.name"
+              class="w-full h-48 object-cover rounded-lg"
+            />
+          }
+
+          <!-- Description -->
+          <p class="text-gray-600">{{ selectedProduct()!.description }}</p>
+          
           <!-- Addons -->
-          @if (selectedProduct()!.allowedAddons && selectedProduct()!.allowedAddons!.length > 0) {
+          @if (productAddons().length > 0) {
             <div>
               <h3 class="font-semibold mb-3">Customize</h3>
               <div class="space-y-2">
-                @for (addon of selectedProduct()!.allowedAddons; track addon._id) {
+                @for (addon of productAddons(); track addon._id) {
                   <label class="flex items-center justify-between p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
                     <div class="flex items-center gap-3">
                       <input

@@ -1,11 +1,11 @@
 // src/app/features/customer/menu/menu.component.ts
 
-import { Component, signal, inject, OnInit } from '@angular/core';
+import { Component, signal, inject, OnInit, computed } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CartService, CartItem } from '../../../core/services/cart.service';
-import { Category, Product } from '../../../core/models/product.model';
+import { Category, Product, Addon } from '../../../core/models/product.model';
 import { MenuService } from '../../../core/services/menu.service';
 
 @Component({
@@ -18,11 +18,12 @@ export class MenuComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private menuService = inject(MenuService);
-  cartService = inject(CartService); // Public for template
+  cartService = inject(CartService);
   
   orderId = signal<string>('');
   categories = signal<Category[]>([]);
   products = signal<Product[]>([]);
+  allAddons = signal<Addon[]>([]);
   selectedCategory = signal<string | null>(null);
   loading = signal<boolean>(false);
   
@@ -32,6 +33,16 @@ export class MenuComponent implements OnInit {
   selectedAddons = signal<string[]>([]);
   quantity = signal<number>(1);
 
+  // Computed: Get addons for selected product
+  productAddons = computed(() => {
+    const product = this.selectedProduct();
+    if (!product || !product.allowedAddonIds) return [];
+    
+    return this.allAddons().filter(addon => 
+      product.allowedAddonIds.includes(addon._id)
+    );
+  });
+
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
@@ -39,6 +50,8 @@ export class MenuComponent implements OnInit {
     }
 
     this.loadCategories();
+    this.loadAllProducts();
+    this.loadAllAddons();
   }
 
   loadCategories() {
@@ -47,7 +60,7 @@ export class MenuComponent implements OnInit {
       next: (categories) => {
         this.categories.set(categories);
         if (categories.length > 0) {
-          this.selectCategory(categories[0]._id);
+          this.selectedCategory.set(categories[0]._id);
         }
         this.loading.set(false);
       },
@@ -58,23 +71,29 @@ export class MenuComponent implements OnInit {
     });
   }
 
-  selectCategory(categoryId: string) {
-    this.selectedCategory.set(categoryId);
-    this.loadProducts(categoryId);
+  loadAllProducts() {
+    this.menuService.getProducts().subscribe({
+      next: (products) => this.products.set(products),
+      error: (err) => console.error('Failed to load products', err)
+    });
   }
 
-  loadProducts(categoryId: string) {
-    this.loading.set(true);
-    this.menuService.getProducts(categoryId).subscribe({
-      next: (products) => {
-        this.products.set(products);
-        this.loading.set(false);
-      },
-      error: (err) => {
-        console.error('Failed to load products', err);
-        this.loading.set(false);
-      }
+  loadAllAddons() {
+    this.menuService.getAddons().subscribe({
+      next: (addons) => this.allAddons.set(addons),
+      error: (err) => console.error('Failed to load addons', err)
     });
+  }
+
+  selectCategory(categoryId: string) {
+    this.selectedCategory.set(categoryId);
+  }
+
+  // Filtered products based on selected category
+  getFilteredProducts(): Product[] {
+    const categoryId = this.selectedCategory();
+    if (!categoryId) return this.products();
+    return this.products().filter(p => p.categoryId === categoryId);
   }
 
   openAddonModal(product: Product) {
@@ -90,8 +109,8 @@ export class MenuComponent implements OnInit {
   }
 
   toggleAddon(addonId: string, addonType: string) {
-    if (addonType === 'SINGLE_SELECT') {
-      // Replace existing selection
+    if (addonType === 'single') {
+      // Single select: replace existing
       this.selectedAddons.set([addonId]);
     } else {
       // Multi-select: toggle
@@ -121,7 +140,7 @@ export class MenuComponent implements OnInit {
     if (!product) return 0;
 
     const addonTotal = this.selectedAddons().reduce((sum, addonId) => {
-      const addon = product.allowedAddons?.find(a => a._id === addonId);
+      const addon = this.productAddons().find(a => a._id === addonId);
       return sum + (addon?.price || 0);
     }, 0);
 
@@ -133,7 +152,7 @@ export class MenuComponent implements OnInit {
     if (!product) return;
 
     const selectedAddonObjects = this.selectedAddons().map(addonId => {
-      const addon = product.allowedAddons?.find(a => a._id === addonId);
+      const addon = this.productAddons().find(a => a._id === addonId);
       return {
         addonId,
         addonName: addon?.name || '',
