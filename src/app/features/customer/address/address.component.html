@@ -1,0 +1,118 @@
+<div class="min-h-screen bg-gray-50 flex flex-col">
+      <!-- Header -->
+      <header class="bg-white border-b border-gray-200 px-4 py-3 flex items-center">
+        <button (click)="goBack()" class="p-2 hover:bg-gray-100 rounded-full">
+          <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+        <h1 class="flex-1 text-center text-lg font-bold pr-10">Delivery Address</h1>
+      </header>
+
+      <main class="flex-1 flex flex-col md:flex-row">
+        <!-- Map Section (60%) -->
+        <div class="w-full md:w-[60%] h-[300px] md:h-auto relative">
+          @if (mapLoaded()) {
+            <google-map
+              [center]="mapCenter()"
+              [zoom]="15"
+              [options]="mapOptions"
+              (mapClick)="onMapClick($event)"
+              width="100%"
+              height="100%"
+            >
+              <map-marker
+                [position]="markerPosition()"
+                [options]="{ draggable: true }"
+                (mapDragend)="onMarkerDragEnd($event)"
+              />
+            </google-map>
+          } @else {
+            <div class="w-full h-full bg-gray-200 flex items-center justify-center">
+              <p class="text-gray-500">Loading map...</p>
+            </div>
+          }
+
+          <!-- Current Location Button -->
+          <button
+            (click)="getCurrentLocation()"
+            class="absolute bottom-6 right-6 bg-white p-3 rounded-lg shadow-lg hover:bg-gray-50"
+          >
+            <span class="material-symbols-outlined text-primary">my_location</span>
+          </button>
+        </div>
+
+        <!-- Form Section (40%) -->
+        <div class="w-full md:w-[40%] p-6 md:p-8 bg-white overflow-y-auto">
+          <h2 class="text-2xl font-bold mb-2">Where should we deliver?</h2>
+          <p class="text-gray-500 mb-6 text-sm">Adjust the pin or enter details below</p>
+
+          @if (errorMessage()) {
+            <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+              {{ errorMessage() }}
+            </div>
+          }
+
+          <div class="space-y-4">
+            <!-- Full Address (Auto-filled from geocoding) -->
+            <div>
+              <label class="block text-sm font-semibold mb-2">Full Address</label>
+              <textarea
+                [(ngModel)]="fullAddress"
+                rows="3"
+                placeholder="Address will auto-fill when you move the pin..."
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
+              ></textarea>
+            </div>
+
+            <!-- House/Flat Number -->
+            <div>
+              <label class="block text-sm font-semibold mb-2">House/Flat Number</label>
+              <input
+                type="text"
+                [(ngModel)]="houseNumber"
+                placeholder="e.g., 123, Block A"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              />
+            </div>
+
+            <!-- Street/Area -->
+            <div>
+              <label class="block text-sm font-semibold mb-2">Street/Area</label>
+              <input
+                type="text"
+                [(ngModel)]="street"
+                placeholder="e.g., Green Park, Sector 7"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              />
+            </div>
+
+            <!-- Landmark (Optional) -->
+            <div>
+              <label class="block text-sm font-semibold mb-2">Landmark (Optional)</label>
+              <input
+                type="text"
+                [(ngModel)]="landmark"
+                placeholder="e.g., Near Metro Station"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              />
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="mt-8 space-y-3">
+            <button
+              (click)="saveAndContinue()"
+              [disabled]="loading()"
+              class="w-full bg-primary text-white py-4 rounded-lg font-bold hover:bg-primary/90 transition-colors disabled:opacity-50"
+            >
+              {{ loading() ? 'Saving...' : 'Continue to Menu' }}
+            </button>
+            <button
+              (click)="skipForNow()"
+              class="w-full border-2 border-gray-300 text-gray-700 py-4 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+            >
+              Skip for Now
+            </button>
+          </div>
+        </div>
+      </main>
+    </div>

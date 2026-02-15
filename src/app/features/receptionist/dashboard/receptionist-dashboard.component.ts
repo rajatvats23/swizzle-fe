@@ -141,7 +141,8 @@ export class ReceptionistDashboardComponent {
     this.orderService.initiateOrder(this.phoneNumber).subscribe({
       next: ({ orderId }) => {
         this.loading.set(false);
-        this.router.navigate(['/order', orderId]);
+        // Navigate to address instead of menu
+        this.router.navigate(['/order', orderId, 'address']);
       },
       error: () => {
         this.loading.set(false);

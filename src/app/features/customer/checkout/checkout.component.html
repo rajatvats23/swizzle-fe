@@ -1,0 +1,193 @@
+<div class="min-h-screen bg-gray-50">
+      <!-- Header -->
+      <header class="sticky top-0 bg-white border-b z-10 px-4 py-3">
+        <div class="max-w-6xl mx-auto flex items-center">
+          <button (click)="goBack()" class="p-2 hover:bg-gray-100 rounded-full">
+            <span class="material-symbols-outlined">arrow_back</span>
+          </button>
+          <h1 class="flex-1 text-center text-xl font-bold pr-10">Checkout</h1>
+        </div>
+      </header>
+
+      <main class="max-w-6xl mx-auto px-4 py-8">
+        <h2 class="text-3xl font-bold mb-2">Review Your Order</h2>
+        <p class="text-gray-600 mb-8">Verify details before payment</p>
+
+        <div class="flex flex-col lg:flex-row gap-6">
+          <!-- Left Column (60%) -->
+          <div class="w-full lg:w-[60%] space-y-6">
+            <!-- Customer Details -->
+            <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+              <div class="flex justify-between items-start mb-4">
+                <div class="flex items-center gap-3">
+                  <span class="material-symbols-outlined text-primary bg-primary/10 p-2 rounded-lg">person</span>
+                  <h3 class="text-lg font-bold">Customer Details</h3>
+                </div>
+                <button 
+                  (click)="editingDetails.set(true)"
+                  class="flex items-center gap-1 text-primary font-semibold text-sm hover:underline"
+                >
+                  <span class="material-symbols-outlined text-sm">edit</span>
+                  Edit
+                </button>
+              </div>
+
+              @if (editingDetails()) {
+                <div class="space-y-4 ml-11">
+                  <div>
+                    <label class="block text-xs font-semibold mb-1">Name</label>
+                    <input
+                      [(ngModel)]="customerName"
+                      placeholder="Enter name"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold mb-1">Phone</label>
+                    <input
+                      [(ngModel)]="customerPhone"
+                      placeholder="10-digit number"
+                      maxlength="10"
+                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                    />
+                  </div>
+                  <button 
+                    (click)="editingDetails.set(false)"
+                    class="text-primary font-semibold text-sm"
+                  >
+                    Save
+                  </button>
+                </div>
+              } @else {
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 ml-11">
+                  <div>
+                    <p class="text-xs uppercase tracking-wider text-gray-500 font-bold mb-1">Name</p>
+                    <p class="font-medium">{{ customerName || 'Not provided' }}</p>
+                  </div>
+                  <div>
+                    <p class="text-xs uppercase tracking-wider text-gray-500 font-bold mb-1">Phone</p>
+                    <p class="font-medium">{{ customerPhone || 'Not provided' }}</p>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <!-- Delivery Address -->
+            <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+              <div class="flex justify-between items-start mb-4">
+                <div class="flex items-center gap-3">
+                  <span class="material-symbols-outlined text-primary bg-primary/10 p-2 rounded-lg">location_on</span>
+                  <h3 class="text-lg font-bold">Delivery Address</h3>
+                </div>
+                <button 
+                  (click)="editingAddress.set(true)"
+                  class="flex items-center gap-1 text-primary font-semibold text-sm hover:underline"
+                >
+                  <span class="material-symbols-outlined text-sm">edit</span>
+                  Edit
+                </button>
+              </div>
+
+              @if (editingAddress()) {
+                <div class="space-y-4 ml-11">
+                  <textarea
+                    [(ngModel)]="deliveryAddress"
+                    rows="3"
+                    placeholder="Enter delivery address"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
+                  ></textarea>
+                  <button 
+                    (click)="editingAddress.set(false)"
+                    class="text-primary font-semibold text-sm"
+                  >
+                    Save
+                  </button>
+                </div>
+              } @else {
+                <div class="ml-11">
+                  <p class="leading-relaxed">{{ deliveryAddress || 'Address not provided' }}</p>
+                </div>
+              }
+            </div>
+
+            <!-- Payment Info -->
+            <div class="p-6 border-2 border-dashed border-primary/20 rounded-lg flex items-center justify-center gap-3 text-primary/60">
+              <span class="material-symbols-outlined">lock</span>
+              <span class="font-medium">Secure checkout powered by Stripe</span>
+            </div>
+          </div>
+
+          <!-- Right Column (40%) - Sticky -->
+          <div class="w-full lg:w-[40%]">
+            <div class="sticky top-24 bg-white rounded-lg shadow-md border border-gray-100 overflow-hidden">
+              <div class="bg-primary/5 p-6 border-b border-primary/10">
+                <h3 class="text-lg font-bold flex items-center gap-2">
+                  <span class="material-symbols-outlined text-primary">receipt_long</span>
+                  Order Summary
+                </h3>
+              </div>
+
+              <div class="p-6 space-y-4">
+                @for (item of cartItems(); track item.productId + JSON.stringify(item.selectedAddons)) {
+                  <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                      <span class="font-bold">{{ item.productName }}</span>
+                      <p class="text-sm text-gray-500">Quantity: {{ item.quantity }}</p>
+                      @if (item.selectedAddons.length > 0) {
+                        <p class="text-xs text-gray-400 mt-1">
+                          {{ getAddonNames(item.selectedAddons) }}
+                        </p>
+                      }
+                    </div>
+                    <span class="font-semibold">₹{{ item.itemTotal }}</span>
+                  </div>
+                }
+
+                <hr class="border-t border-gray-200 my-4">
+
+                <div class="flex justify-between items-center text-sm text-gray-600">
+                  <span>Delivery Fee</span>
+                  <span class="line-through">₹40</span>
+                </div>
+                <div class="flex justify-between items-center text-sm text-gray-600">
+                  <span>Taxes & Charges</span>
+                  <span>₹0</span>
+                </div>
+
+                <hr class="border-t border-gray-200 my-4">
+
+                <div class="flex justify-between items-center pt-2">
+                  <span class="text-xl font-bold">Total Amount</span>
+                  <div class="text-right">
+                    <span class="text-2xl font-black text-primary">₹{{ cartTotal() }}</span>
+                    <p class="text-[10px] text-gray-400 uppercase tracking-widest font-bold">
+                      Inclusive of all taxes
+                    </p>
+                  </div>
+                </div>
+
+                <button 
+                  (click)="proceedToPayment()"
+                  class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-lg mt-6 shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2 group"
+                >
+                  Proceed to Payment
+                  <span class="material-symbols-outlined transition-transform group-hover:translate-x-1">arrow_forward</span>
+                </button>
+
+                <p class="text-center text-[11px] text-gray-400 mt-4 px-4">
+                  By proceeding, you agree to our Terms of Service and Privacy Policy.
+                </p>
+              </div>
+            </div>
+
+            <!-- Trust Badges -->
+            <div class="mt-6 flex justify-center items-center gap-6 opacity-40">
+              <span class="material-symbols-outlined">verified_user</span>
+              <span class="material-symbols-outlined">payment</span>
+              <span class="material-symbols-outlined">credit_card</span>
+              <span class="material-symbols-outlined">shield</span>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
