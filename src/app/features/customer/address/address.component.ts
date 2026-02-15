@@ -2,33 +2,30 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { GoogleMap, MapMarker } from '@angular/google-maps';
+import { OrderService } from '../../../core/services/order.service';
 
 @Component({
   selector: 'app-address',
   standalone: true,
   imports: [FormsModule, GoogleMap, MapMarker],
   templateUrl: './address.component.html',
-  styles: [`
-    :host {
-      display: block;
-      height: 100vh;
-    }
-  `]
+  styleUrl: './address.component.scss'
 })
 export class AddressComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
+  private orderService = inject(OrderService);
 
   orderId = '';
   mapLoaded = signal(false);
   mapCenter = signal({ lat: 28.6139, lng: 77.2090 }); // Delhi default
   markerPosition = signal({ lat: 28.6139, lng: 77.2090 });
-  
+
   fullAddress = '';
   houseNumber = '';
   street = '';
   landmark = '';
-  
+
   loading = signal(false);
   errorMessage = signal('');
 
@@ -41,7 +38,7 @@ export class AddressComponent implements OnInit {
 
   ngOnInit() {
     this.orderId = this.route.snapshot.paramMap.get('orderId') || '';
-    
+
     // Load Google Maps API
     if (!window.google) {
       this.loadGoogleMapsScript();
@@ -53,7 +50,8 @@ export class AddressComponent implements OnInit {
 
   loadGoogleMapsScript() {
     const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyCUXDlJk2LX7Qqo24pVild7an36bHMyycA
+&libraries=places`;
     script.async = true;
     script.defer = true;
     script.onload = () => {
@@ -108,20 +106,46 @@ export class AddressComponent implements OnInit {
   }
 
   saveAndContinue() {
+    // Validate
     if (!this.fullAddress && !this.houseNumber && !this.street) {
       this.errorMessage.set('Please provide at least basic address details');
       return;
     }
 
     this.loading.set(true);
-    
-    // TODO: Call backend API to save address
-    // this.orderService.updateAddress(this.orderId, addressData).subscribe(...)
-    
-    setTimeout(() => {
-      this.loading.set(false);
-      this.router.navigate(['/order', this.orderId, 'menu']);
-    }, 500);
+    this.errorMessage.set('');
+
+    // Build address object
+    const addressText = [
+      this.houseNumber,
+      this.street,
+      this.landmark,
+      this.fullAddress
+    ].filter(Boolean).join(', ');
+
+    const addressData = {
+      deliveryAddress: {
+        text: addressText || this.fullAddress,
+        lat: this.markerPosition().lat,
+        lng: this.markerPosition().lng
+      }
+    };
+
+    console.log('💾 Saving address:', addressData); // DEBUG
+
+    // Call API
+    this.orderService.updateCustomerDetails(this.orderId, addressData).subscribe({
+      next: (order) => {
+        console.log('✅ Address saved:', order); // DEBUG
+        this.loading.set(false);
+        this.router.navigate(['/order', this.orderId, 'menu']);
+      },
+      error: (err) => {
+        console.error('❌ Failed to save address:', err);
+        this.errorMessage.set('Failed to save address. Please try again.');
+        this.loading.set(false);
+      }
+    });
   }
 
   skipForNow() {

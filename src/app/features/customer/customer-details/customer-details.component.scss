@@ -1,0 +1,233 @@
+@use '../../../shared/styles/mixins' as *;
+
+.customer-details-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-lg);
+  background-color: var(--color-background);
+}
+
+.details-card {
+  @include card-base;
+  width: 100%;
+  max-width: 480px;
+  padding: var(--space-2xl);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+// Progress Section
+.progress-section {
+  @include flex-column;
+  align-items: center;
+  margin-bottom: var(--space-xl);
+  gap: var(--space-md);
+}
+
+.progress-label {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-tertiary);
+}
+
+.progress-dots {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: var(--radius-full);
+  background-color: #e5e7eb;
+  transition: all var(--transition-base);
+  
+  &.active {
+    background-color: var(--color-primary);
+    box-shadow: 0 0 0 4px rgba(13, 160, 77, 0.2);
+  }
+}
+
+.connector {
+  width: 4rem;
+  height: 2px;
+  background-color: #e5e7eb;
+}
+
+// Header Section
+.header-section {
+  text-align: center;
+  margin-bottom: var(--space-xl);
+  width: 100%;
+}
+
+.title {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-sm);
+  letter-spacing: -0.025em;
+}
+
+.subtitle {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+}
+
+// Error Alert
+.error-alert {
+  @include flex-center;
+  gap: var(--space-sm);
+  width: 100%;
+  padding: var(--space-md);
+  background-color: #fef2f2;
+  border: 1px solid rgba(229, 62, 62, 0.2);
+  border-radius: var(--radius-md);
+  color: var(--color-error);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-lg);
+  
+  .material-symbols-outlined {
+    font-size: 1.25rem;
+  }
+}
+
+// Loading State
+.loading-state {
+  @include flex-center;
+  width: 100%;
+  padding: var(--space-2xl) 0;
+  color: var(--color-text-tertiary);
+}
+
+// Form
+.details-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.field-label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-left: var(--space-xs);
+}
+
+// Phone Input
+.phone-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.phone-prefix {
+  position: absolute;
+  left: 1rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  padding-right: var(--space-md);
+  border-right: 1px solid var(--color-border-input);
+}
+
+.phone-input {
+  @include input-base;
+  height: 3.5rem;
+  padding-left: 4rem;
+  padding-right: 3rem;
+  border-radius: var(--radius-lg);
+  background-color: var(--color-background);
+  cursor: not-allowed;
+  
+  &:disabled {
+    opacity: 1;
+    color: var(--color-text-primary);
+  }
+}
+
+.check-icon {
+  position: absolute;
+  right: 1rem;
+  color: var(--color-success);
+  font-size: 1.5rem;
+  font-variation-settings: 'FILL' 1;
+}
+
+// Text Input
+.text-input {
+  @include input-base;
+  height: 3.5rem;
+  padding: 0 var(--space-md);
+  border-radius: var(--radius-lg);
+  
+  &.error {
+    border-color: var(--color-error);
+  }
+}
+
+// Action Buttons
+.action-buttons {
+  @include flex-between;
+  padding-top: var(--space-md);
+  gap: var(--space-md);
+}
+
+.btn {
+  height: 3.5rem;
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-base);
+  padding: 0 var(--space-xl);
+}
+
+.btn-primary {
+  @include button-primary;
+}
+
+.btn-text {
+  @include button-text;
+  height: auto;
+  padding: var(--space-md);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  text-decoration: none;
+  
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// Responsive
+@media (max-width: 640px) {
+  .customer-details-container {
+    padding: var(--space-md);
+  }
+  
+  .details-card {
+    padding: var(--space-xl) var(--space-lg);
+  }
+  
+  .title {
+    font-size: var(--font-size-xl);
+  }
+  
+  .action-buttons {
+    flex-direction: column-reverse;
+    
+    .btn-primary {
+      width: 100%;
+    }
+  }
+}

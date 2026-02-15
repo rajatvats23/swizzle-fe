@@ -12,31 +12,31 @@ export const routes: Routes = [
       },
       {
         path: 'details',
-        loadComponent: () => 
+        loadComponent: () =>
           import('./features/customer/customer-details/customer-details.component')
             .then(m => m.CustomerDetailsComponent)
       },
       {
         path: 'verify-otp',
-        loadComponent: () => 
+        loadComponent: () =>
           import('./features/customer/verify-otp/verify-otp.component')
             .then(m => m.VerifyOtpComponent)
       },
       {
         path: 'address',
-        loadComponent: () => 
+        loadComponent: () =>
           import('./features/customer/address/address.component')
             .then(m => m.AddressComponent)
       },
       {
         path: 'menu',
-        loadComponent: () => 
+        loadComponent: () =>
           import('./features/customer/menu/menu.component')
             .then(m => m.MenuComponent)
       },
       {
         path: 'checkout',
-        loadComponent: () => 
+        loadComponent: () =>
           import('./features/customer/checkout/checkout.component')
             .then(m => m.CheckoutComponent)
       }
@@ -44,7 +44,7 @@ export const routes: Routes = [
   },
   {
     path: 'receptionist',
-    loadComponent: () => 
+    loadComponent: () =>
       import('./features/receptionist/dashboard/receptionist-dashboard.component')
         .then(m => m.ReceptionistDashboardComponent)
   },

@@ -1,0 +1,303 @@
+@use '../../../shared/styles/mixins' as *;
+
+:host {
+  display: block;
+  height: 100vh;
+}
+
+.address-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: var(--color-background);
+}
+
+// Header
+.address-header {
+  @include app-header;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: var(--shadow-sm);
+}
+
+.back-button {
+  @include flex-center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: background-color var(--transition-base);
+  
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+  
+  .material-symbols-outlined {
+    font-size: 1.5rem;
+    color: var(--color-text-primary);
+  }
+}
+
+.header-title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+// Main Content
+.address-main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+// Map Section (60% on desktop)
+.map-section {
+  @include map-container;
+  width: 100%;
+  height: 300px;
+  position: relative;
+  
+  @media (min-width: 768px) {
+    width: 60%;
+    height: auto;
+  }
+}
+
+.map-loading {
+  @include flex-center;
+  width: 100%;
+  height: 100%;
+  background-color: #e5e7eb;
+  color: var(--color-text-tertiary);
+}
+
+.map-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.02), transparent);
+  pointer-events: none;
+  transition: background var(--transition-base);
+  
+  .map-section:hover & {
+    background: transparent;
+  }
+}
+
+.map-controls {
+  position: absolute;
+  bottom: var(--space-lg);
+  right: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.map-control-btn {
+  @include icon-button;
+  box-shadow: var(--shadow-md);
+  
+  .material-symbols-outlined {
+    font-size: 1.5rem;
+    color: var(--color-primary);
+  }
+}
+
+// Form Section (40% on desktop)
+.form-section {
+  width: 100%;
+  padding: var(--space-xl);
+  overflow-y: auto;
+  background-color: var(--color-surface);
+  
+  @media (min-width: 768px) {
+    width: 40%;
+    padding: var(--space-2xl);
+  }
+}
+
+.form-content {
+  max-width: 28rem;
+  margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+// Form Header
+.form-header {
+  margin-bottom: var(--space-md);
+}
+
+.form-title {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-sm);
+  
+  @media (min-width: 768px) {
+    font-size: var(--font-size-3xl);
+  }
+}
+
+.form-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+// Error Message
+.error-message {
+  @include flex-center;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  background-color: #fef2f2;
+  border: 1px solid rgba(229, 62, 62, 0.2);
+  border-radius: var(--radius-md);
+  color: var(--color-error);
+  font-size: var(--font-size-sm);
+  
+  .material-symbols-outlined {
+    font-size: 1.25rem;
+  }
+}
+
+// Form Fields
+.form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.field-label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.optional-tag {
+  font-weight: 400;
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-xs);
+}
+
+.field-input {
+  @include input-base;
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+}
+
+.field-textarea {
+  @include textarea-base;
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+}
+
+.field-with-icon {
+  position: relative;
+  
+  .field-icon {
+    position: absolute;
+    left: var(--space-md);
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-text-tertiary);
+    font-size: 1.25rem;
+  }
+  
+  .field-input {
+    padding-left: 3rem;
+  }
+}
+
+// Delivery Info
+.delivery-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding: var(--space-md) 0;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  
+  .material-symbols-outlined {
+    font-size: 1.125rem;
+    color: var(--color-primary);
+  }
+}
+
+// Form Actions
+.form-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding-top: var(--space-md);
+}
+
+.btn {
+  height: 3.5rem;
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-base);
+  
+  .material-symbols-outlined {
+    font-size: 1.25rem;
+    transition: transform var(--transition-base);
+  }
+  
+  &:hover .material-symbols-outlined {
+    transform: translateX(0.25rem);
+  }
+}
+
+.btn-primary {
+  @include button-primary;
+}
+
+.btn-text {
+  @include button-text;
+  height: auto;
+  padding: var(--space-md);
+  font-size: var(--font-size-sm);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+// Responsive - Mobile View
+@media (max-width: 767px) {
+  .address-main {
+    flex-direction: column;
+  }
+  
+  .map-section {
+    height: 45%;
+  }
+  
+  .form-section {
+    height: 55%;
+  }
+  
+  .form-content {
+    gap: var(--space-lg);
+  }
+  
+  .form-title {
+    font-size: var(--font-size-xl);
+  }
+}

@@ -1,0 +1,92 @@
+<div class="dashboard-container">
+  <div class="dashboard-card">
+    
+    <!-- Logo -->
+    <div class="logo-section">
+      <div class="logo-icon">
+        <span class="material-symbols-outlined">storefront</span>
+      </div>
+    </div>
+
+    <!-- Header -->
+    <div class="header-section">
+      <h1 class="title">Receptionist Dashboard</h1>
+      <p class="subtitle">Take orders or send links to customers</p>
+    </div>
+
+    <!-- Success/Error Messages -->
+    @if (successMessage()) {
+      <div class="alert alert-success">
+        <span class="material-symbols-outlined">check_circle</span>
+        <span>{{ successMessage() }}</span>
+      </div>
+    }
+
+    @if (errorMessage()) {
+      <div class="alert alert-error">
+        <span class="material-symbols-outlined">error</span>
+        <span>{{ errorMessage() }}</span>
+      </div>
+    }
+
+    <!-- Form -->
+    <div class="form-section">
+      <div class="input-group">
+        <label class="input-label">Phone Number</label>
+        <div class="input-wrapper">
+          <span class="input-prefix">+91</span>
+          <input
+            type="tel"
+            [(ngModel)]="phoneNumber"
+            (input)="clearMessages()"
+            placeholder="98765 43210"
+            maxlength="10"
+            class="input-field"
+          />
+          @if (phoneError()) {
+            <span class="input-error-icon material-symbols-outlined">cancel</span>
+          }
+        </div>
+        @if (phoneError()) {
+          <span class="input-error-text">{{ phoneError() }}</span>
+        }
+      </div>
+
+      <div class="button-group">
+        <button
+          (click)="sendLink()"
+          [disabled]="loading()"
+          class="btn btn-primary"
+        >
+          @if (loading()) {
+            <span>Processing...</span>
+          } @else {
+            <span class="material-symbols-outlined">send</span>
+            <span>Send Link</span>
+          }
+        </button>
+
+        <button
+          (click)="takeOrder()"
+          [disabled]="loading()"
+          class="btn btn-secondary"
+        >
+          <span class="material-symbols-outlined">shopping_cart</span>
+          <span>Take Order</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Footer Indicator -->
+    <div class="footer-indicator">
+      <div class="dot active"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+
+  </div>
+
+  <!-- Background Gradients -->
+  <div class="bg-gradient bg-gradient-top"></div>
+  <div class="bg-gradient bg-gradient-bottom"></div>
+</div>

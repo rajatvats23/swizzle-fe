@@ -1,6 +1,4 @@
-// src/app/features/customer/verify-otp/verify-otp.component.ts
-
-import { Component, signal, inject, OnInit } from '@angular/core';
+import { Component, signal, inject, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -11,8 +9,9 @@ import { OrderService } from '../../../core/services/order.service';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './verify-otp.component.html',
+  styleUrl: './verify-otp.component.scss'  // ← ADD THIS
 })
-export class VerifyOtpComponent implements OnInit {
+export class VerifyOtpComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private orderService = inject(OrderService);
@@ -25,23 +24,35 @@ export class VerifyOtpComponent implements OnInit {
   error = signal<string>('');
   resendTimer = signal<number>(30);
   canResend = signal<boolean>(false);
+  
+  private timerInterval?: number;
 
   ngOnInit() {
+    console.log('🔵 VerifyOtpComponent initialized'); // DEBUG
+    
     const id = this.route.snapshot.paramMap.get('id');
-    const navigation = this.router.getCurrentNavigation();
     
     if (id) {
       this.orderId.set(id);
     }
 
-    // Get data passed from previous page
-    if (navigation?.extras.state) {
-      this.phoneNumber.set(navigation.extras.state['phoneNumber'] || '');
-      this.customerName.set(navigation.extras.state['customerName'] || '');
+    // Get data from history.state (passed via router.navigate)
+    const state = window.history.state;
+    console.log('📦 Navigation state:', state); // DEBUG
+    
+    if (state.phoneNumber) {
+      this.phoneNumber.set(state.phoneNumber);
+      console.log('✅ Phone from state:', state.phoneNumber);
+    }
+    
+    if (state.customerName) {
+      this.customerName.set(state.customerName);
+      console.log('✅ Name from state:', state.customerName);
     }
 
     // If no phone number, redirect back
     if (!this.phoneNumber()) {
+      console.log('❌ No phone number, redirecting back');
       this.router.navigate(['/order', id, 'details']);
       return;
     }
@@ -49,20 +60,32 @@ export class VerifyOtpComponent implements OnInit {
     this.startResendTimer();
   }
 
+  ngOnDestroy() {
+    this.clearTimer();
+  }
+
   startResendTimer() {
+    this.clearTimer();
     this.canResend.set(false);
     this.resendTimer.set(30);
 
-    const interval = setInterval(() => {
+    this.timerInterval = window.setInterval(() => {
       const current = this.resendTimer();
       if (current <= 1) {
-        clearInterval(interval);
+        this.clearTimer();
         this.canResend.set(true);
         this.resendTimer.set(0);
       } else {
         this.resendTimer.set(current - 1);
       }
     }, 1000);
+  }
+
+  clearTimer() {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = undefined;
+    }
   }
 
   resendOtp() {
@@ -129,8 +152,8 @@ export class VerifyOtpComponent implements OnInit {
 
   onOtpInput(event: Event) {
     const input = event.target as HTMLInputElement;
-    const value = input.value.replace(/\D/g, ''); // Only digits
-    this.otp.set(value.slice(0, 6)); // Max 6 digits
+    const value = input.value.replace(/\D/g, '');
+    this.otp.set(value.slice(0, 6));
   }
 
   goBack() {

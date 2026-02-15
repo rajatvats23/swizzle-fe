@@ -1,0 +1,230 @@
+@use '../../../shared/styles/mixins' as *;
+
+.dashboard-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard-card {
+  @include card-base;
+  width: 100%;
+  max-width: 480px;
+  padding: var(--space-2xl);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+// Logo Section
+.logo-section {
+  margin-bottom: var(--space-xl);
+}
+
+.logo-icon {
+  @include flex-center;
+  width: 3rem;
+  height: 3rem;
+  background-color: var(--color-primary-light);
+  border-radius: var(--radius-lg);
+  color: var(--color-primary);
+  
+  .material-symbols-outlined {
+    font-size: 1.875rem;
+  }
+}
+
+// Header Section
+.header-section {
+  text-align: center;
+  margin-bottom: var(--space-xl);
+}
+
+.title {
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-sm);
+  letter-spacing: -0.025em;
+}
+
+.subtitle {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+}
+
+// Alert Messages
+.alert {
+  @include flex-center;
+  gap: var(--space-sm);
+  width: 100%;
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-lg);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  
+  .material-symbols-outlined {
+    font-size: 1.25rem;
+  }
+}
+
+.alert-success {
+  background-color: #e7f6ed;
+  color: var(--color-success);
+  border: 1px solid rgba(13, 160, 77, 0.2);
+}
+
+.alert-error {
+  background-color: #fef2f2;
+  color: var(--color-error);
+  border: 1px solid rgba(229, 62, 62, 0.2);
+}
+
+// Form Section
+.form-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.input-label {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-left: var(--space-xs);
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-prefix {
+  position: absolute;
+  left: 1rem;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  padding-right: var(--space-md);
+  border-right: 1px solid var(--color-border);
+}
+
+.input-field {
+  @include input-base;
+  height: 3.5rem;
+  padding-left: 4rem;
+  padding-right: 3rem;
+  border-radius: var(--radius-lg);
+}
+
+.input-error-icon {
+  position: absolute;
+  right: 1rem;
+  color: var(--color-error);
+  font-size: 1.25rem;
+}
+
+.input-error-text {
+  font-size: var(--font-size-xs);
+  color: var(--color-error);
+  margin-left: var(--space-xs);
+}
+
+// Buttons
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding-top: var(--space-sm);
+}
+
+.btn {
+  height: 3.5rem;
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-base);
+  
+  .material-symbols-outlined {
+    font-size: 1.25rem;
+  }
+}
+
+.btn-primary {
+  @include button-primary;
+  box-shadow: var(--shadow-primary);
+}
+
+.btn-secondary {
+  @include button-secondary;
+}
+
+// Footer Indicator
+.footer-indicator {
+  @include flex-center;
+  gap: var(--space-xs);
+  margin-top: var(--space-xl);
+  opacity: 0.4;
+}
+
+.dot {
+  width: 0.5rem;
+  height: 0.25rem;
+  background-color: rgba(13, 160, 77, 0.3);
+  border-radius: var(--radius-full);
+  
+  &.active {
+    width: 2rem;
+    background-color: var(--color-primary);
+  }
+}
+
+// Background Gradients
+.bg-gradient {
+  position: fixed;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.15;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bg-gradient-top {
+  top: 0;
+  right: 0;
+  background-color: var(--color-primary);
+  transform: translate(33%, -50%);
+}
+
+.bg-gradient-bottom {
+  bottom: 0;
+  left: 0;
+  background-color: var(--color-primary);
+  opacity: 0.08;
+  transform: translate(-33%, 50%);
+}
+
+// Responsive
+@media (max-width: 640px) {
+  .dashboard-card {
+    padding: var(--space-xl);
+  }
+  
+  .title {
+    font-size: var(--font-size-xl);
+  }
+}
