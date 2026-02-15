@@ -114,7 +114,8 @@ export class ReceptionistDashboardComponent {
 
     this.loading.set(true);
     this.orderService.initiateOrder(this.phoneNumber).subscribe({
-      next: ({ orderId }) => {
+      next: (response: { orderId: string; orderNumber: string }) => {
+        const { orderId } = response;
         this.orderService.sendLink(orderId, this.phoneNumber).subscribe({
           next: () => {
             this.loading.set(false);
@@ -139,7 +140,8 @@ export class ReceptionistDashboardComponent {
 
     this.loading.set(true);
     this.orderService.initiateOrder(this.phoneNumber).subscribe({
-      next: ({ orderId }) => {
+      next: (response: { orderId: string; orderNumber: string }) => {
+        const { orderId } = response;
         this.loading.set(false);
         // Navigate to address instead of menu
         this.router.navigate(['/order', orderId, 'address']);
