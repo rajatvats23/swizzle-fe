@@ -50,7 +50,7 @@
             inputmode="numeric"
             maxlength="1"
             [id]="'otp-' + i"
-            [value]="otp()[i] ?? ''"
+            [value]="otp()[i]"
             (input)="onBoxInput($event, i)"
             (keydown)="onBoxKeydown($event, i)"
             (paste)="onPaste($event)"
