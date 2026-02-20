@@ -11,7 +11,6 @@ import { CartItem } from '../../../core/models/order.model';
   standalone: true,
   imports: [FormsModule],
   templateUrl: './menu.component.html',
-  styleUrl: './menu.component.scss'
 })
 export class MenuComponent implements OnInit {
   private route = inject(ActivatedRoute);
@@ -20,278 +19,167 @@ export class MenuComponent implements OnInit {
   private orderService = inject(OrderService);
 
   protected readonly Math = Math;
-  protected readonly JSON = JSON;
 
   orderId = '';
-  
+
   // Menu data
   categories = signal<Category[]>([]);
   products = signal<Product[]>([]);
   allAddons = signal<Addon[]>([]);
-  
+
   // UI state
   searchQuery = signal('');
-  selectedCategory = signal<string>('');
+  selectedCategory = signal('');
   selectedProduct = signal<Product | null>(null);
   selectedAddons = signal<Addon[]>([]);
   quantity = signal(1);
   showCart = signal(false);
-  loading = signal(false);
-  
-  // ✅ CART STATE - Synced with backend
+  loading = signal(true);
+
+  // Cart — synced with backend
   cartItems = signal<CartItem[]>([]);
 
-  // Computed values
-  cartCount = computed(() => 
-    this.cartItems().reduce((sum, item) => sum + item.quantity, 0)
-  );
-
-  cartTotal = computed(() => 
-    this.cartItems().reduce((sum, item) => sum + item.itemTotal, 0)
-  );
+  cartCount = computed(() => this.cartItems().reduce((sum, i) => sum + i.quantity, 0));
+  cartTotal = computed(() => this.cartItems().reduce((sum, i) => sum + i.itemTotal, 0));
 
   filteredProducts = computed(() => {
     let prods = this.products();
-    const catId = this.selectedCategory();
-    const query = this.searchQuery().toLowerCase().trim();
-
-    if (catId) {
-      prods = prods.filter(p => p.categoryId === catId);
-    }
-    
-    if (query) {
-      prods = prods.filter(p => 
-        p.name.toLowerCase().includes(query) || 
-        p.description.toLowerCase().includes(query)
-      );
-    }
-
+    const cat = this.selectedCategory();
+    const q = this.searchQuery().toLowerCase().trim();
+    if (cat) prods = prods.filter(p => p.categoryId === cat);
+    if (q) prods = prods.filter(p => p.name.toLowerCase().includes(q) || p.description.toLowerCase().includes(q));
     return prods;
   });
 
   productAddons = computed(() => {
-    const product = this.selectedProduct();
-    if (!product) return [];
-    return this.allAddons().filter(a => 
-      product.allowedAddonIds.includes(a._id)
-    );
+    const p = this.selectedProduct();
+    if (!p) return [];
+    return this.allAddons().filter(a => p.allowedAddonIds.includes(a._id));
   });
 
   currentPrice = computed(() => {
     const base = this.selectedProduct()?.basePrice || 0;
-    const addonTotal = this.selectedAddons().reduce((sum, a) => sum + a.price, 0);
-    return base + addonTotal;
+    return base + this.selectedAddons().reduce((s, a) => s + a.price, 0);
   });
 
+  // Does the tapped product have addons? If yes, open sheet. If no, add straight to cart.
+  hasAddons = computed(() => this.productAddons().length > 0);
+
   ngOnInit() {
-    // ✅ Fixed: Route param is 'id' not 'orderId'
     this.orderId = this.route.snapshot.paramMap.get('id') || '';
-    
-    if (!this.orderId) {
-      console.error('❌ No orderId found in route');
-      this.router.navigate(['/']);
-      return;
-    }
-    
-    console.log('✅ Menu component initialized with orderId:', this.orderId);
+    if (!this.orderId) { this.router.navigate(['/']); return; }
     this.loadMenu();
     this.loadCart();
   }
 
   loadMenu() {
     this.loading.set(true);
-
     this.menuService.getCategories().subscribe({
-      next: (cats) => {
-        this.categories.set(cats);
-        if (cats.length > 0) {
-          this.selectedCategory.set(cats[0]._id);
-        }
-      },
-      error: (err) => console.error('Failed to load categories:', err)
+      next: cats => { this.categories.set(cats); if (cats.length) this.selectedCategory.set(cats[0]._id); },
     });
-
     this.menuService.getProducts().subscribe({
-      next: (prods) => {
-        this.products.set(prods);
-        this.loading.set(false);
-      },
-      error: (err) => {
-        console.error('Failed to load products:', err);
-        this.loading.set(false);
-      }
+      next: prods => { this.products.set(prods); this.loading.set(false); },
+      error: () => this.loading.set(false),
     });
-
-    this.menuService.getAddons().subscribe({
-      next: (addons) => this.allAddons.set(addons),
-      error: (err) => console.error('Failed to load addons:', err)
-    });
+    this.menuService.getAddons().subscribe({ next: addons => this.allAddons.set(addons) });
   }
 
-  // ✅ Load existing cart from backend
   loadCart() {
     this.orderService.getOrder(this.orderId).subscribe({
-      next: (order) => {
-        this.cartItems.set(order.items || []);
-      },
-      error: (err) => console.error('Failed to load cart:', err)
+      next: order => this.cartItems.set(order.items || []),
     });
   }
 
-  onSearch() {
-    // Triggers filteredProducts computed
-  }
+  selectCategory(id: string) { this.selectedCategory.set(id); }
 
-  selectCategory(categoryId: string) {
-    this.selectedCategory.set(categoryId);
-  }
-
-  openAddonModal(product: Product) {
+  // Tap product card
+  tapProduct(product: Product) {
     this.selectedProduct.set(product);
     this.selectedAddons.set([]);
     this.quantity.set(1);
+    // If no addons, add directly
+    if (!this.allAddons().some(a => product.allowedAddonIds.includes(a._id))) {
+      this.addItemToCart();
+    }
+    // Otherwise sheet opens via template (selectedProduct truthy)
   }
 
-  closeModal() {
+  closeSheet() {
     this.selectedProduct.set(null);
     this.selectedAddons.set([]);
     this.quantity.set(1);
   }
 
-  isAddonSelected(addonId: string): boolean {
-    return this.selectedAddons().some(a => a._id === addonId);
-  }
+  isAddonSelected(id: string) { return this.selectedAddons().some(a => a._id === id); }
 
   toggleAddon(addon: Addon, isSingle: boolean) {
-    if (isSingle) {
-      this.selectedAddons.set([addon]);
-    } else {
-      if (this.isAddonSelected(addon._id)) {
-        this.selectedAddons.update(addons => 
-          addons.filter(a => a._id !== addon._id)
-        );
-      } else {
-        this.selectedAddons.update(addons => [...addons, addon]);
-      }
+    if (isSingle) { this.selectedAddons.set([addon]); }
+    else {
+      this.isAddonSelected(addon._id)
+        ? this.selectedAddons.update(list => list.filter(a => a._id !== addon._id))
+        : this.selectedAddons.update(list => [...list, addon]);
     }
   }
 
-  // ✅ Add item - synced with backend
+  incQty() { this.quantity.update(q => q + 1); }
+  decQty() { this.quantity.update(q => Math.max(1, q - 1)); }
+
   addItemToCart() {
     const product = this.selectedProduct();
     if (!product) return;
-
-    const addonTotal = this.selectedAddons().reduce((sum, a) => sum + a.price, 0);
+    const addonTotal = this.selectedAddons().reduce((s, a) => s + a.price, 0);
     const newItem: CartItem = {
       productId: product._id,
       productName: product.name,
       basePrice: product.basePrice,
       quantity: this.quantity(),
-      selectedAddons: this.selectedAddons().map(a => ({
-        addonId: a._id,
-        addonName: a.name,
-        addonPrice: a.price
-      })),
-      itemTotal: (product.basePrice + addonTotal) * this.quantity()
+      selectedAddons: this.selectedAddons().map(a => ({ addonId: a._id, addonName: a.name, addonPrice: a.price })),
+      itemTotal: (product.basePrice + addonTotal) * this.quantity(),
     };
-
-    // Optimistic UI update
     this.cartItems.update(items => [...items, newItem]);
-    this.closeModal();
-
-    // Sync with backend
+    this.closeSheet();
     this.orderService.addItemToOrder(this.orderId, newItem).subscribe({
-      next: (order) => {
-        // Replace with backend response (includes item._id)
-        this.cartItems.set(order.items);
+      next: order => this.cartItems.set(order.items),
+      error: () => {
+        this.cartItems.update(items => items.filter(i =>
+          !(i.productId === newItem.productId && JSON.stringify(i.selectedAddons) === JSON.stringify(newItem.selectedAddons))
+        ));
       },
-      error: (err) => {
-        console.error('Failed to add item:', err);
-        // Rollback optimistic update
-        this.cartItems.update(items => 
-          items.filter(item => 
-            !(item.productId === newItem.productId && 
-              JSON.stringify(item.selectedAddons) === JSON.stringify(newItem.selectedAddons))
-          )
-        );
-        alert('Failed to add item. Please try again.');
-      }
     });
   }
 
-  // ✅ Update quantity - synced with backend
   increaseQuantity(item: CartItem) {
     if (!item._id) return;
-
-    const newQuantity = item.quantity + 1;
-    
-    // Optimistic update
-    this.cartItems.update(items =>
-      items.map(i => i._id === item._id ? { ...i, quantity: newQuantity, itemTotal: this.calculateItemTotal(i, newQuantity) } : i)
-    );
-
-    // Sync with backend
-    this.orderService.updateItemQuantity(this.orderId, item._id, newQuantity).subscribe({
-      next: (order) => {
-        this.cartItems.set(order.items);
-      },
-      error: (err) => {
-        console.error('Failed to update quantity:', err);
-        // Rollback
-        this.loadCart();
-      }
+    const qty = item.quantity + 1;
+    this.cartItems.update(items => items.map(i => i._id === item._id ? { ...i, quantity: qty, itemTotal: this.calcTotal(i, qty) } : i));
+    this.orderService.updateItemQuantity(this.orderId, item._id, qty).subscribe({
+      next: order => this.cartItems.set(order.items),
+      error: () => this.loadCart(),
     });
   }
 
   decreaseQuantity(item: CartItem) {
     if (!item._id) return;
-
-    const newQuantity = item.quantity - 1;
-    
-    if (newQuantity < 1) {
-      this.removeItem(item);
-      return;
-    }
-
-    // Optimistic update
-    this.cartItems.update(items =>
-      items.map(i => i._id === item._id ? { ...i, quantity: newQuantity, itemTotal: this.calculateItemTotal(i, newQuantity) } : i)
-    );
-
-    // Sync with backend
-    this.orderService.updateItemQuantity(this.orderId, item._id, newQuantity).subscribe({
-      next: (order) => {
-        this.cartItems.set(order.items);
-      },
-      error: (err) => {
-        console.error('Failed to update quantity:', err);
-        this.loadCart();
-      }
+    if (item.quantity <= 1) { this.removeItem(item); return; }
+    const qty = item.quantity - 1;
+    this.cartItems.update(items => items.map(i => i._id === item._id ? { ...i, quantity: qty, itemTotal: this.calcTotal(i, qty) } : i));
+    this.orderService.updateItemQuantity(this.orderId, item._id, qty).subscribe({
+      next: order => this.cartItems.set(order.items),
+      error: () => this.loadCart(),
     });
   }
 
-  // ✅ Remove item - synced with backend
   removeItem(item: CartItem) {
     if (!item._id) return;
-
-    // Optimistic update
     this.cartItems.update(items => items.filter(i => i._id !== item._id));
-
-    // Sync with backend
     this.orderService.removeItemFromOrder(this.orderId, item._id).subscribe({
-      next: (order) => {
-        this.cartItems.set(order.items);
-      },
-      error: (err) => {
-        console.error('Failed to remove item:', err);
-        this.loadCart();
-      }
+      next: order => this.cartItems.set(order.items),
+      error: () => this.loadCart(),
     });
   }
 
-  private calculateItemTotal(item: CartItem, quantity: number): number {
-    const addonTotal = item.selectedAddons.reduce((sum, a) => sum + a.addonPrice, 0);
-    return (item.basePrice + addonTotal) * quantity;
+  private calcTotal(item: CartItem, qty: number) {
+    return (item.basePrice + item.selectedAddons.reduce((s, a) => s + a.addonPrice, 0)) * qty;
   }
 
   proceedToCheckout() {
@@ -299,25 +187,9 @@ export class MenuComponent implements OnInit {
     this.router.navigate(['/order', this.orderId, 'checkout']);
   }
 
-  goBack() {
-    this.router.navigate(['/order', this.orderId, 'address']);
-  }
+  goBack() { this.router.navigate(['/order', this.orderId, 'address']); }
 
-  // Helper methods for template
-  getAddonNames(addons: CartItem['selectedAddons']): string {
-    return addons.map(a => a.addonName).join(', ');
-  }
-
-  // Quantity controls for modal (before item is added to cart)
-  increaseQuantityModal() {
-    this.quantity.update(q => q + 1);
-  }
-
-  decreaseQuantityModal() {
-    this.quantity.update(q => Math.max(1, q - 1));
-  }
-
-  hasSingleTypeAddon(): boolean {
-    return this.productAddons().some(a => a.type === 'single');
-  }
+  formatCurrency(n: number) { return '₹' + n.toFixed(2); }
+  getAddonNames(addons: CartItem['selectedAddons']) { return addons.map(a => a.addonName).join(', '); }
+  hasSingleTypeAddon() { return this.productAddons().some(a => a.type === 'single'); }
 }

@@ -38,3 +38,57 @@ export enum OrderStatus {
   PAID = 'PAID',
   CONFIRMED = 'CONFIRMED'
 }
+
+// Extended Order with timestamps (returned by admin endpoints)
+export interface AdminOrder extends Order {
+  tax: number;
+  deliveryCharge: number;
+  paymentId?: string;
+  isAssistedOrder: boolean;
+  receptionistId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Analytics types
+export interface DailyOrderCount {
+  date: string;
+  count: number;
+}
+
+export interface TopProduct {
+  rank: number;
+  productName: string;
+  totalQty: number;
+  totalRevenue: number;
+}
+
+export interface StatusCounts {
+  INITIATED: number;
+  IN_PROGRESS: number;
+  PAYMENT_PENDING: number;
+  PAID: number;
+  CONFIRMED: number;
+}
+
+// Customer aggregate (from admin/customers endpoint)
+export interface Customer {
+  _id: string;           // phone number (the group key)
+  phoneNumber: string;
+  customerName?: string;
+  totalOrders: number;
+  totalSpent: number;
+  lastOrderAt: string;
+  firstOrderAt: string;
+  statuses: string[];
+}
+
+export interface AnalyticsData {
+  totalOrders: number;
+  totalRevenue: number;
+  paidOrders: number;
+  todayOrders: number;
+  statusCounts: StatusCounts;
+  dailyOrders: DailyOrderCount[];
+  topProducts: TopProduct[];
+}

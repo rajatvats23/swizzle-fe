@@ -3,6 +3,49 @@ import { Routes } from '@angular/router';
 
 export const routes: Routes = [
   {
+    path: 'admin',
+    loadComponent: () =>
+      import('./features/admin/layout/admin-layout.component')
+        .then(m => m.AdminLayoutComponent),
+    children: [
+      {
+        path: '',
+        redirectTo: 'menu',
+        pathMatch: 'full',
+      },
+      {
+        path: 'menu',
+        loadComponent: () =>
+          import('./features/admin/menu/admin-menu.component')
+            .then(m => m.AdminMenuComponent),
+      },
+      {
+        path: 'addons',
+        loadComponent: () =>
+          import('./features/admin/addons/admin-addons.component')
+            .then(m => m.AdminAddonsComponent),
+      },
+      {
+        path: 'orders',
+        loadComponent: () =>
+          import('./features/admin/orders/admin-orders.component')
+            .then(m => m.AdminOrdersComponent),
+      },
+      {
+        path: 'analytics',
+        loadComponent: () =>
+          import('./features/admin/analytics/admin-analytics.component')
+            .then(m => m.AdminAnalyticsComponent),
+      },
+      {
+        path: 'customers',
+        loadComponent: () =>
+          import('./features/admin/customers/admin-customers.component')
+            .then(m => m.AdminCustomersComponent),
+      },
+    ],
+  },
+  {
     path: 'order/:id',
     children: [
       {

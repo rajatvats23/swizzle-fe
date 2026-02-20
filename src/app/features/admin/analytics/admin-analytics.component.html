@@ -1,0 +1,144 @@
+<div class="flex flex-col flex-1 min-h-0 bg-gray-50 overflow-auto">
+
+  <!-- Header -->
+  <div class="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between shrink-0">
+    <div>
+      <h1 class="text-xl font-semibold text-gray-900">Analytics</h1>
+      <p class="text-sm text-gray-500 mt-0.5">Overview of your restaurant's performance</p>
+    </div>
+    <button (click)="loadAnalytics()"
+      class="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
+      <span class="material-symbols-outlined text-[18px]">refresh</span>
+      Refresh
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="flex items-center justify-center flex-1 text-gray-400">
+      <span class="material-symbols-outlined animate-spin text-3xl">progress_activity</span>
+    </div>
+  } @else if (error()) {
+    <div class="flex flex-col items-center justify-center flex-1 text-gray-400 gap-3">
+      <span class="material-symbols-outlined text-4xl">cloud_off</span>
+      <p class="text-sm">Failed to load analytics</p>
+      <button (click)="loadAnalytics()"
+        class="px-4 py-2 text-sm bg-[#0a2e1a] text-white rounded-lg hover:bg-[#0d3d22] transition-colors">
+        Try Again
+      </button>
+    </div>
+  } @else if (analytics()) {
+    <div class="p-6 space-y-6">
+
+      <!-- Stat cards -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        @for (card of statCards(); track card.label) {
+          <div class="bg-white rounded-xl border border-gray-200 p-5 flex items-start gap-4">
+            <div class="p-2.5 rounded-xl {{ card.bg }} shrink-0">
+              <span class="material-symbols-outlined {{ card.color }} text-[22px]">{{ card.icon }}</span>
+            </div>
+            <div>
+              <p class="text-xs text-gray-500 font-medium">{{ card.label }}</p>
+              <p class="text-xl font-bold text-gray-900 mt-0.5">{{ card.value }}</p>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Charts row -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Orders per day bar chart (takes 2/3 width) -->
+        <div class="lg:col-span-2 bg-white rounded-xl border border-gray-200 p-5">
+          <h2 class="text-sm font-semibold text-gray-700 mb-1">Orders — Last 7 Days</h2>
+          <p class="text-xs text-gray-400 mb-5">Daily order volume</p>
+
+          @if (analytics()!.dailyOrders.every(d => d.count === 0)) {
+            <div class="flex flex-col items-center justify-center h-40 text-gray-300 gap-2">
+              <span class="material-symbols-outlined text-3xl">bar_chart</span>
+              <p class="text-sm">No orders in the last 7 days</p>
+            </div>
+          } @else {
+            <div class="flex items-end gap-3 h-40">
+              @for (day of analytics()!.dailyOrders; track day.date) {
+                <div class="flex flex-col items-center gap-1 flex-1">
+                  <!-- Count label -->
+                  <span class="text-xs text-gray-400 font-medium">
+                    {{ day.count > 0 ? day.count : '' }}
+                  </span>
+                  <!-- Bar -->
+                  <div class="w-full rounded-t-md bg-[#0a2e1a] transition-all"
+                    [style.height.%]="barHeightPercent(day.count)"
+                    [style.min-height]="day.count > 0 ? '4px' : '0'"
+                    style="max-height: 120px;">
+                  </div>
+                  <!-- Day label -->
+                  <span class="text-[10px] text-gray-400 whitespace-nowrap">{{ formatDay(day.date) }}</span>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Orders by status (1/3 width) -->
+        <div class="bg-white rounded-xl border border-gray-200 p-5">
+          <h2 class="text-sm font-semibold text-gray-700 mb-1">Orders by Status</h2>
+          <p class="text-xs text-gray-400 mb-4">All-time breakdown</p>
+          <div class="space-y-3">
+            @for (entry of statusEntries(); track entry.key) {
+              <div class="flex items-center justify-between gap-3">
+                <span class="text-sm text-gray-600 truncate">{{ statusLabel(entry.key) }}</span>
+                <div class="flex items-center gap-2 shrink-0">
+                  <div class="w-24 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                    <div class="h-full bg-[#0a2e1a] rounded-full transition-all"
+                      [style.width.%]="analytics()!.totalOrders > 0
+                        ? (entry.count / analytics()!.totalOrders) * 100
+                        : 0">
+                    </div>
+                  </div>
+                  <span class="text-sm font-medium text-gray-800 w-6 text-right">{{ entry.count }}</span>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Top products table -->
+      <div class="bg-white rounded-xl border border-gray-200 p-5">
+        <h2 class="text-sm font-semibold text-gray-700 mb-1">Top Products</h2>
+        <p class="text-xs text-gray-400 mb-4">By quantity sold (paid & confirmed orders only)</p>
+
+        @if (analytics()!.topProducts.length === 0) {
+          <div class="flex flex-col items-center py-10 text-gray-300 gap-2">
+            <span class="material-symbols-outlined text-3xl">restaurant_menu</span>
+            <p class="text-sm">No sales data yet</p>
+          </div>
+        } @else {
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-gray-100">
+                <th class="text-left py-2 text-xs font-semibold text-gray-400 uppercase tracking-wide w-10">#</th>
+                <th class="text-left py-2 text-xs font-semibold text-gray-400 uppercase tracking-wide">Product</th>
+                <th class="text-right py-2 text-xs font-semibold text-gray-400 uppercase tracking-wide">Qty Sold</th>
+                <th class="text-right py-2 text-xs font-semibold text-gray-400 uppercase tracking-wide">Revenue</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+              @for (p of analytics()!.topProducts; track p.rank) {
+                <tr class="hover:bg-gray-50 transition-colors">
+                  <td class="py-3 text-gray-300 font-medium">{{ p.rank }}</td>
+                  <td class="py-3 font-medium text-gray-800">{{ p.productName }}</td>
+                  <td class="py-3 text-right text-gray-600">{{ p.totalQty }}</td>
+                  <td class="py-3 text-right font-semibold text-gray-900">{{ formatCurrency(p.totalRevenue) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+
+    </div>
+  }
+
+</div>

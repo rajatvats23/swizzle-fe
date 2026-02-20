@@ -1,212 +1,177 @@
-@if (loading()) {
-  <div class="loading-container">
-    <div class="loading-content">
-      <div class="spinner"></div>
-      <p>Loading checkout...</p>
+<div class="min-h-screen bg-background-light font-display pb-28">
+
+  <!-- Header -->
+  <div class="sticky top-0 z-10 flex items-center bg-background-light/80 backdrop-blur-md px-4 py-4 justify-between border-b border-slate-100">
+    <button (click)="goBack()" class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-slate-100 transition-colors">
+      <span class="material-symbols-outlined text-slate-700">arrow_back</span>
+    </button>
+    <h2 class="text-lg font-bold text-slate-900 flex-1 text-center pr-10">Checkout</h2>
+  </div>
+
+  <!-- Progress -->
+  <div class="flex w-full items-center gap-2 py-5 px-4">
+    <div class="flex flex-col items-center gap-1.5 flex-1">
+      <div class="h-1.5 w-full rounded-full bg-primary"></div>
+      <span class="text-[10px] font-bold uppercase tracking-wider text-primary">Cart</span>
+    </div>
+    <div class="flex flex-col items-center gap-1.5 flex-1">
+      <div class="h-1.5 w-full rounded-full bg-primary"></div>
+      <span class="text-[10px] font-bold uppercase tracking-wider text-primary">Delivery</span>
+    </div>
+    <div class="flex flex-col items-center gap-1.5 flex-1">
+      <div class="h-1.5 w-full rounded-full bg-slate-200"></div>
+      <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Payment</span>
     </div>
   </div>
-} @else if (!order()) {
-  <div class="error-container">
-    <div class="error-content">
-      <span class="material-symbols-outlined">error</span>
-      <p>Order not found</p>
-      <button (click)="goBack()" class="back-link">Go back to menu</button>
+
+  @if (loading()) {
+    <div class="flex items-center justify-center py-16 text-slate-400 gap-2">
+      <span class="material-symbols-outlined animate-spin text-[24px]">progress_activity</span>
+      <span class="text-sm">Loading order…</span>
     </div>
-  </div>
-} @else {
-  <div class="checkout-container">
-    <!-- Header -->
-    <header class="checkout-header">
-      <button (click)="goBack()" class="back-button">
-        <span class="material-symbols-outlined">arrow_back</span>
-      </button>
-      <h1 class="header-title">Checkout</h1>
-    </header>
+  } @else {
+    <div class="px-4 space-y-4">
 
-    <main class="checkout-main">
-      <div class="page-header">
-        <h2 class="page-title">Review Your Order</h2>
-        <p class="page-subtitle">Verify details before payment</p>
-      </div>
-
+      <!-- Error -->
       @if (error()) {
-        <div class="error-alert">
-          <span class="material-symbols-outlined">error</span>
+        <div class="flex items-start gap-2 bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl px-4 py-3">
+          <span class="material-symbols-outlined text-[18px] flex-shrink-0 mt-0.5">error</span>
           <span>{{ error() }}</span>
         </div>
       }
 
-      <div class="checkout-grid">
-        <!-- Left Column -->
-        <div class="checkout-left">
-          
-          <!-- Customer Details Card -->
-          <div class="detail-card">
-            <div class="card-header">
-              <div class="header-left">
-                <span class="material-symbols-outlined icon">person</span>
-                <h3>Customer Details</h3>
-              </div>
-              @if (!editingDetails()) {
-                <button (click)="editingDetails.set(true)" class="edit-button">
-                  <span class="material-symbols-outlined">edit</span>
-                  Edit
-                </button>
-              }
-            </div>
-
-            @if (editingDetails()) {
-              <div class="edit-form">
-                <div class="form-field">
-                  <label>Name</label>
-                  <input
-                    [(ngModel)]="customerName"
-                    placeholder="Enter name"
-                    class="input-field"
-                  />
-                </div>
-                <div class="form-actions">
-                  <button (click)="saveDetails()" class="btn-primary">Save</button>
-                  <button (click)="editingDetails.set(false)" class="btn-secondary">Cancel</button>
-                </div>
-              </div>
-            } @else {
-              <div class="detail-grid">
-                <div class="detail-item">
-                  <p class="detail-label">Name</p>
-                  <p class="detail-value">{{ customerName || 'Not provided' }}</p>
-                </div>
-                <div class="detail-item">
-                  <p class="detail-label">Phone</p>
-                  <p class="detail-value">{{ customerPhone || 'Not provided' }}</p>
-                </div>
-              </div>
-            }
-          </div>
-
-          <!-- Delivery Address Card -->
-          <div class="detail-card">
-            <div class="card-header">
-              <div class="header-left">
-                <span class="material-symbols-outlined icon">location_on</span>
-                <h3>Delivery Address</h3>
-              </div>
-              @if (!editingAddress()) {
-                <button (click)="editingAddress.set(true)" class="edit-button">
-                  <span class="material-symbols-outlined">edit</span>
-                  Edit
-                </button>
-              }
-            </div>
-
-            @if (editingAddress()) {
-              <div class="edit-form">
-                <textarea
-                  [(ngModel)]="deliveryAddress"
-                  rows="3"
-                  placeholder="Enter delivery address"
-                  class="textarea-field"
-                ></textarea>
-                <div class="form-actions">
-                  <button (click)="saveAddress()" class="btn-primary">Save</button>
-                  <button (click)="editingAddress.set(false)" class="btn-secondary">Cancel</button>
-                </div>
-              </div>
-            } @else {
-              <div class="address-content">
-                <p>{{ deliveryAddress || 'Address not provided' }}</p>
-              </div>
-            }
-          </div>
-
-          <!-- Security Badge -->
-          <div class="security-badge">
-            <span class="material-symbols-outlined">lock</span>
-            <span>Secure checkout powered by Stripe</span>
-          </div>
+      <!-- Review Order -->
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-base font-bold text-slate-900">Review Order</h3>
+          <button (click)="goBack()" class="text-primary text-sm font-semibold">Edit</button>
         </div>
-
-        <!-- Right Column -->
-        <div class="checkout-right">
-          <div class="order-summary-card">
-            <div class="summary-header">
-              <span class="material-symbols-outlined">receipt_long</span>
-              <h3>Order Summary</h3>
+        <div class="space-y-3">
+          @for (item of cartItems(); track item._id) {
+            <div class="flex items-center gap-3 rounded-xl bg-white p-3 shadow-sm border border-slate-100">
+              <div class="w-16 h-16 bg-slate-100 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center">
+                <span class="material-symbols-outlined text-3xl text-slate-300">restaurant</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-bold text-slate-900 leading-tight">{{ item.productName }}</p>
+                @if (item.selectedAddons.length > 0) {
+                  <p class="text-[11px] text-slate-400 mt-0.5 truncate">+ {{ getAddonNames(item.selectedAddons) }}</p>
+                }
+                <p class="text-xs text-slate-400 mt-0.5">Qty: {{ item.quantity }}</p>
+              </div>
+              <p class="text-primary text-sm font-bold flex-shrink-0">&#8377;{{ item.itemTotal.toFixed(2) }}</p>
             </div>
+          }
+        </div>
+      </div>
 
-            <div class="summary-content">
-              @if (cartItems().length === 0) {
-                <div class="empty-cart">
-                  <span class="material-symbols-outlined">shopping_cart</span>
-                  <p>Your cart is empty</p>
-                </div>
+      <!-- Delivery Details -->
+      <div>
+        <h3 class="text-base font-bold text-slate-900 mb-3">Delivery Details</h3>
+        <div class="rounded-xl bg-white p-4 shadow-sm border border-slate-100 space-y-4">
+
+          <!-- Customer -->
+          <div class="flex items-start gap-3">
+            <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <span class="material-symbols-outlined text-primary text-[20px]">person</span>
+            </div>
+            <div class="flex-1">
+              <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Recipient</p>
+              @if (!editingDetails()) {
+                <p class="text-slate-900 font-medium text-sm mt-0.5">{{ order()?.customerName || '—' }}</p>
+                <p class="text-slate-500 text-xs">+91 {{ order()?.phoneNumber }}</p>
               } @else {
-                <div class="items-list">
-                  @for (item of cartItems(); track item._id) {
-                    <div class="cart-item">
-                      <div class="item-info">
-                        <span class="item-name">{{ item.productName }}</span>
-                        <p class="item-quantity">Quantity: {{ item.quantity }}</p>
-                        @if (item.selectedAddons.length > 0) {
-                          <p class="item-addons">{{ getAddonNames(item.selectedAddons) }}</p>
-                        }
-                      </div>
-                      <span class="item-price">₹{{ item.itemTotal }}</span>
-                    </div>
-                  }
+                <input type="text" [(ngModel)]="customerName" name="customerName"
+                  class="w-full mt-1 border-2 border-primary/30 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary" />
+                <div class="flex gap-2 mt-2">
+                  <button (click)="saveDetails()" class="text-xs bg-primary text-white px-3 py-1.5 rounded-lg font-semibold">Save</button>
+                  <button (click)="editingDetails.set(false)" class="text-xs text-slate-400 px-3 py-1.5">Cancel</button>
                 </div>
-
-                <hr class="divider">
-
-                <div class="fee-row">
-                  <span>Delivery Fee</span>
-                  <span class="strikethrough">₹40</span>
-                </div>
-                <div class="fee-row">
-                  <span>Taxes & Charges</span>
-                  <span>₹0</span>
-                </div>
-
-                <hr class="divider">
-
-                <div class="total-section">
-                  <span class="total-label">Total Amount</span>
-                  <div class="total-right">
-                    <span class="total-amount">₹{{ cartTotal() }}</span>
-                    <p class="tax-note">Inclusive of all taxes</p>
-                  </div>
-                </div>
-
-                <button 
-                  (click)="proceedToPayment()"
-                  [disabled]="processingPayment()"
-                  class="checkout-button"
-                >
-                  @if (processingPayment()) {
-                    <span class="material-symbols-outlined spinner">progress_activity</span>
-                    <span>Processing...</span>
-                  } @else {
-                    <span>Proceed to Payment</span>
-                    <span class="material-symbols-outlined">arrow_forward</span>
-                  }
-                </button>
-
-                <p class="terms-text">
-                  By proceeding, you agree to our Terms of Service and Privacy Policy.
-                </p>
               }
             </div>
+            @if (!editingDetails()) {
+              <button (click)="editingDetails.set(true)" class="text-primary p-1 rounded hover:bg-primary/10 transition-colors self-start">
+                <span class="material-symbols-outlined text-[18px]">edit</span>
+              </button>
+            }
           </div>
 
-          <!-- Trust Badges -->
-          <div class="trust-badges">
-            <span class="material-symbols-outlined">verified_user</span>
-            <span class="material-symbols-outlined">payment</span>
-            <span class="material-symbols-outlined">credit_card</span>
-            <span class="material-symbols-outlined">shield</span>
+          <div class="w-full h-px bg-slate-100"></div>
+
+          <!-- Address -->
+          <div class="flex items-start gap-3">
+            <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+              <span class="material-symbols-outlined text-primary text-[20px]">location_on</span>
+            </div>
+            <div class="flex-1">
+              <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Delivery Address</p>
+              @if (!editingAddress()) {
+                <p class="text-slate-900 font-medium text-sm mt-0.5">{{ order()?.deliveryAddress?.text || 'No address set' }}</p>
+              } @else {
+                <textarea [(ngModel)]="deliveryAddress" name="deliveryAddress" rows="2"
+                  class="w-full mt-1 border-2 border-primary/30 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary resize-none"></textarea>
+                <div class="flex gap-2 mt-2">
+                  <button (click)="saveAddress()" class="text-xs bg-primary text-white px-3 py-1.5 rounded-lg font-semibold">Save</button>
+                  <button (click)="editingAddress.set(false)" class="text-xs text-slate-400 px-3 py-1.5">Cancel</button>
+                </div>
+              }
+            </div>
+            @if (!editingAddress()) {
+              <button (click)="editingAddress.set(true)" class="text-primary p-1 rounded hover:bg-primary/10 transition-colors self-start">
+                <span class="material-symbols-outlined text-[18px]">edit</span>
+              </button>
+            }
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Payment Summary -->
+      <div>
+        <h3 class="text-base font-bold text-slate-900 mb-3">Payment Summary</h3>
+        <div class="rounded-xl bg-white p-4 shadow-sm border border-slate-100 space-y-3">
+          <div class="flex justify-between items-center text-sm">
+            <span class="text-slate-500">Subtotal</span>
+            <span class="text-slate-900 font-medium">&#8377;{{ cartTotal().toFixed(2) }}</span>
+          </div>
+          <div class="flex justify-between items-center text-sm">
+            <span class="text-slate-500">Delivery Fee</span>
+            <span class="text-primary font-medium">FREE</span>
+          </div>
+          <div class="flex justify-between items-center text-sm">
+            <span class="text-slate-500">Tax (GST)</span>
+            <span class="text-slate-900 font-medium">&#8377;0.00</span>
+          </div>
+          <div class="pt-3 border-t border-slate-100 flex justify-between items-center">
+            <span class="text-slate-900 font-bold">Total Amount</span>
+            <span class="text-primary text-xl font-bold">&#8377;{{ cartTotal().toFixed(2) }}</span>
           </div>
         </div>
       </div>
-    </main>
-  </div>
-}
+
+      <!-- Security badge -->
+      <div class="flex items-center justify-center gap-2 text-slate-400 text-xs py-2">
+        <span class="material-symbols-outlined text-[16px]">lock</span>
+        Secured by Stripe
+      </div>
+
+    </div>
+  }
+
+</div>
+
+<!-- Sticky CTA -->
+<div class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg px-4 py-4 border-t border-slate-100">
+  <button
+    (click)="proceedToPayment()"
+    [disabled]="processingPayment() || loading() || cartItems().length === 0"
+    class="w-full bg-primary text-white font-bold py-4 rounded-xl shadow-lg shadow-primary/20 flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-60">
+    @if (processingPayment()) {
+      <span class="material-symbols-outlined text-[20px] animate-spin">progress_activity</span>
+      <span>Redirecting to payment…</span>
+    } @else {
+      <span>Proceed to Payment</span>
+      <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+    }
+  </button>
+</div>

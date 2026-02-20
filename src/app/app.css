@@ -1,21 +1,43 @@
 @import 'tailwindcss';
 
 @theme {
-  --color-primary: #0da04d;
-  --color-primary-dark: #0a803d;
-  --color-primary-light: #e7f6ed;
-  --color-background-light: #f6f8f7;
-  --color-background-dark: #102218;
-  --color-text-primary: #111814;
-  --color-text-secondary: #618973;
-  --color-error: #ef4444;
-}
+  /* Brand colors */
+  --color-primary:           #0da04d;
+  --color-primary-dark:      #0a803d;
+  --color-primary-light:     #e7f6ed;
 
-:root {
-  --primary: #0da04d;
+  /* Backgrounds */
+  --color-background-light:  #f6f8f7;
+  --color-background-dark:   #102218;
+
+  /* Text */
+  --color-text-primary:      #111814;
+  --color-text-secondary:    #618973;
+
+  /* State */
+  --color-error:             #ef4444;
+  --color-success:           #0da04d;
+
+  /* Font */
+  --font-display: 'Work Sans', sans-serif;
+
+  /* Animation */
+  --animate-slide-up: slide-up 0.2s ease forwards;
+
+  /* Keyframes */
+  @keyframes slide-up {
+    from { transform: translateY(0.75rem); opacity: 0; }
+    to   { transform: translateY(0);       opacity: 1; }
+  }
 }
 
 body {
-  margin: 0;
   font-family: 'Work Sans', sans-serif;
+}
+
+@layer utilities {
+  .bg-dot-grid {
+    background-image: radial-gradient(circle, rgba(13, 160, 77, 0.06) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
 }

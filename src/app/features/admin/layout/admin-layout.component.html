@@ -1,0 +1,185 @@
+<div class="flex h-screen bg-background-light overflow-hidden font-display">
+
+  <!-- ── Sidebar ────────────────────────────────────────────────────────── -->
+  <aside
+    class="flex flex-col bg-[#0a2e1a] flex-shrink-0 overflow-hidden transition-[width] duration-300 ease-in-out"
+    [class]="sidebarCollapsed() ? 'w-[72px]' : 'w-64'"
+  >
+    <!-- Brand -->
+    <div class="flex items-center gap-3 px-4 h-16 border-b border-white/10 flex-shrink-0 overflow-hidden">
+      <div class="w-9 h-9 rounded-xl bg-primary flex items-center justify-center flex-shrink-0 shadow-md">
+        <span class="material-symbols-outlined text-white text-[18px]">storefront</span>
+      </div>
+      @if (!sidebarCollapsed()) {
+        <div class="overflow-hidden">
+          <span class="text-white font-bold text-base tracking-tight whitespace-nowrap">Swizzle</span>
+          <p class="text-white/40 text-[11px] whitespace-nowrap">Admin Portal</p>
+        </div>
+      }
+    </div>
+
+    <!-- Nav -->
+    <nav class="flex-1 py-4 overflow-hidden">
+      @if (!sidebarCollapsed()) {
+        <p class="px-4 text-[10px] font-semibold text-white/30 uppercase tracking-widest mb-2">Management</p>
+      }
+      @for (item of navItems; track item.route) {
+        <a
+          class="relative flex items-center gap-3 mx-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 cursor-pointer overflow-hidden group mb-0.5"
+          [routerLink]="item.route"
+          routerLinkActive="bg-white/[0.12] text-white font-semibold"
+          [routerLinkActiveOptions]="{ exact: false }"
+          #rla="routerLinkActive"
+          [class]="rla.isActive ? 'text-white' : 'text-white/60 hover:bg-white/[0.06] hover:text-white'"
+          [title]="sidebarCollapsed() ? item.label : ''"
+        >
+          <!-- Active left bar -->
+          @if (rla.isActive) {
+            <span class="absolute left-0 top-1/2 -translate-y-1/2 h-[60%] w-[3px] bg-primary rounded-r-sm"></span>
+          }
+          <span class="material-symbols-outlined text-[20px] flex-shrink-0">{{ item.icon }}</span>
+          @if (!sidebarCollapsed()) {
+            <span class="whitespace-nowrap">{{ item.label }}</span>
+          }
+        </a>
+      }
+    </nav>
+
+    <!-- Footer: Admin Badge + Collapse Toggle -->
+    <div class="border-t border-white/10 p-3 flex-shrink-0">
+      @if (!sidebarCollapsed()) {
+        <div class="flex items-center gap-3 px-1 mb-3">
+          <div class="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center flex-shrink-0">
+            <span class="text-xs font-bold text-primary">A</span>
+          </div>
+          <div class="overflow-hidden">
+            <p class="text-white text-xs font-semibold whitespace-nowrap">Admin</p>
+            <p class="text-white/40 text-[11px] whitespace-nowrap">Restaurant Manager</p>
+          </div>
+        </div>
+      }
+      <button
+        class="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors text-xs cursor-pointer"
+        (click)="toggleSidebar()"
+        [title]="sidebarCollapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
+      >
+        <span class="material-symbols-outlined text-[18px]">
+          {{ sidebarCollapsed() ? 'chevron_right' : 'chevron_left' }}
+        </span>
+        @if (!sidebarCollapsed()) {
+          <span class="font-medium">Collapse</span>
+        }
+      </button>
+    </div>
+  </aside>
+
+  <!-- ── Main Area ──────────────────────────────────────────────────────── -->
+  <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+    <!-- Top Header -->
+    <header class="h-16 bg-white border-b border-gray-200/70 flex items-center justify-end px-6 gap-3 flex-shrink-0">
+
+      <!-- Notifications Bell -->
+      <div class="relative">
+        <button
+          (click)="toggleNotifPanel()"
+          class="w-9 h-9 flex items-center justify-center rounded-xl text-gray-500 hover:bg-gray-100 hover:text-gray-800 transition-colors cursor-pointer relative"
+          title="Notifications"
+        >
+          <span class="material-symbols-outlined text-[20px]">notifications</span>
+          @if (notifService.unreadCount() > 0) {
+            <span class="absolute top-1 right-1 min-w-[16px] h-4 px-0.5 rounded-full bg-red-500 border-2 border-white flex items-center justify-center">
+              <span class="text-white text-[9px] font-bold leading-none">
+                {{ notifService.unreadCount() > 9 ? '9+' : notifService.unreadCount() }}
+              </span>
+            </span>
+          }
+        </button>
+
+        <!-- Notification Dropdown Panel -->
+        @if (notifOpen()) {
+          <!-- Backdrop -->
+          <div class="fixed inset-0 z-40" (click)="closeNotifPanel()"></div>
+
+          <!-- Panel -->
+          <div class="absolute right-0 top-11 z-50 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+
+            <!-- Header -->
+            <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+              <div>
+                <p class="text-sm font-semibold text-gray-900">Notifications</p>
+                @if (notifService.notifications().length > 0) {
+                  <p class="text-xs text-gray-400">{{ notifService.notifications().length }} new order{{ notifService.notifications().length !== 1 ? 's' : '' }}</p>
+                }
+              </div>
+              @if (notifService.notifications().length > 0) {
+                <button (click)="notifService.clearAll()" class="text-xs text-gray-400 hover:text-gray-700 transition-colors">
+                  Clear all
+                </button>
+              }
+            </div>
+
+            <!-- Notification list -->
+            <div class="max-h-80 overflow-y-auto">
+              @if (notifService.notifications().length === 0) {
+                <div class="flex flex-col items-center justify-center py-10 gap-2 text-gray-400">
+                  <span class="material-symbols-outlined text-3xl">notifications_off</span>
+                  <p class="text-xs">No new orders yet</p>
+                  <p class="text-[11px] text-gray-300">New orders will appear here</p>
+                </div>
+              } @else {
+                @for (notif of notifService.notifications(); track notif.order._id) {
+                  <div class="flex gap-3 px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0">
+                    <!-- Icon -->
+                    <div class="w-9 h-9 rounded-full bg-emerald-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span class="material-symbols-outlined text-emerald-600 text-[16px]">receipt_long</span>
+                    </div>
+                    <!-- Content -->
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-semibold text-gray-900 truncate">
+                        New Order — {{ notif.order.orderNumber }}
+                      </p>
+                      <p class="text-xs text-gray-500 truncate mt-0.5">
+                        {{ notif.order.customerName || notif.order.phoneNumber }}
+                        @if (notif.order.items.length > 0) {
+                          · {{ notif.order.items.length }} item{{ notif.order.items.length !== 1 ? 's' : '' }}
+                          · {{ formatCurrency(notif.order.total) }}
+                        }
+                      </p>
+                      <p class="text-[11px] text-gray-300 mt-0.5">{{ formatTime(notif.seenAt) }}</p>
+                    </div>
+                  </div>
+                }
+              }
+            </div>
+
+            <!-- Footer link -->
+            @if (notifService.notifications().length > 0) {
+              <div class="border-t border-gray-100 px-4 py-2.5">
+                <a routerLink="/admin/orders" (click)="closeNotifPanel()"
+                  class="text-xs text-[#0a2e1a] font-medium hover:underline">
+                  View all orders →
+                </a>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="w-px h-5 bg-gray-200"></div>
+      <button
+        class="w-9 h-9 flex items-center justify-center rounded-xl text-gray-500 hover:bg-gray-100 hover:text-gray-800 transition-colors cursor-pointer"
+        title="Account"
+      >
+        <span class="material-symbols-outlined text-[20px]">account_circle</span>
+      </button>
+    </header>
+
+    <!-- Page Content -->
+    <main class="flex-1 overflow-hidden p-6 flex flex-col">
+      <router-outlet />
+    </main>
+
+  </div>
+
+</div>

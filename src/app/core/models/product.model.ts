@@ -18,10 +18,17 @@ export interface Product {
   displayOrder: number;
 }
 
+export interface AddonOption {
+  _id: string;
+  name: string;
+  price: number;
+}
+
 export interface Addon {
   _id: string;
   name: string;
   price: number;
   type: 'single' | 'multiple';
   isActive: boolean;
+  options: AddonOption[];
 }
