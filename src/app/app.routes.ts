@@ -1,12 +1,19 @@
-
 import { Routes } from '@angular/router';
+import { authGuard, roleGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
+  {
+    path: 'login',
+    loadComponent: () =>
+      import('./features/auth/login/login.component')
+        .then(m => m.LoginComponent),
+  },
   {
     path: 'admin',
     loadComponent: () =>
       import('./features/admin/layout/admin-layout.component')
         .then(m => m.AdminLayoutComponent),
+    canActivate: [roleGuard('admin', 'manager', 'kitchen')],
     children: [
       {
         path: '',
@@ -32,6 +39,12 @@ export const routes: Routes = [
             .then(m => m.AdminOrdersComponent),
       },
       {
+        path: 'kitchen',
+        loadComponent: () =>
+          import('./features/admin/kitchen/kitchen-display.component')
+            .then(m => m.KitchenDisplayComponent),
+      },
+      {
         path: 'analytics',
         loadComponent: () =>
           import('./features/admin/analytics/admin-analytics.component')
@@ -42,6 +55,18 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/admin/customers/admin-customers.component')
             .then(m => m.AdminCustomersComponent),
+      },
+      {
+        path: 'promos',
+        loadComponent: () =>
+          import('./features/admin/promos/admin-promos.component')
+            .then(m => m.AdminPromosComponent),
+      },
+      {
+        path: 'staff',
+        loadComponent: () =>
+          import('./features/admin/staff/admin-staff.component')
+            .then(m => m.AdminStaffComponent),
       },
     ],
   },
@@ -82,6 +107,12 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/customer/checkout/checkout.component')
             .then(m => m.CheckoutComponent)
+      },
+      {
+        path: 'feedback',
+        loadComponent: () =>
+          import('./features/customer/feedback/feedback.component')
+            .then(m => m.FeedbackComponent)
       }
     ]
   },
@@ -92,8 +123,20 @@ export const routes: Routes = [
         .then(m => m.ReceptionistDashboardComponent)
   },
   {
+    path: 'mfa-setup',
+    loadComponent: () =>
+      import('./features/auth/mfa-setup/mfa-setup.component')
+        .then(m => m.MfaSetupComponent),
+  },
+  {
+    path: 'mfa-verify',
+    loadComponent: () =>
+      import('./features/auth/mfa-verify/mfa-verify.component')
+        .then(m => m.MfaVerifyComponent),
+  },
+  {
     path: '',
-    redirectTo: 'receptionist',
+    redirectTo: 'login',
     pathMatch: 'full'
   }
 ];

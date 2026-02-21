@@ -36,7 +36,10 @@ export enum OrderStatus {
   IN_PROGRESS = 'IN_PROGRESS',
   PAYMENT_PENDING = 'PAYMENT_PENDING',
   PAID = 'PAID',
-  CONFIRMED = 'CONFIRMED'
+  CONFIRMED = 'CONFIRMED',
+  PREPARING = 'PREPARING',
+  READY = 'READY',
+  DELIVERED = 'DELIVERED'
 }
 
 // Extended Order with timestamps (returned by admin endpoints)
@@ -69,6 +72,9 @@ export interface StatusCounts {
   PAYMENT_PENDING: number;
   PAID: number;
   CONFIRMED: number;
+  PREPARING: number;
+  READY: number;
+  DELIVERED: number;
 }
 
 // Customer aggregate (from admin/customers endpoint)

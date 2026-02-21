@@ -1,0 +1,176 @@
+<!-- Kitchen Display System -->
+<div class="flex flex-col flex-1 min-h-0">
+
+  <!-- Header Bar -->
+  <div class="flex flex-wrap items-center justify-between gap-4 mb-6 flex-shrink-0">
+    <div class="flex items-center gap-4">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary text-2xl">cooking</span>
+        <h1 class="text-xl font-extrabold text-gray-900 tracking-tight">Kitchen Display</h1>
+      </div>
+      <div class="h-6 w-px bg-gray-200"></div>
+      <span class="text-xs font-bold text-primary flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+        LIVE
+      </span>
+    </div>
+
+    <!-- Search -->
+    <div class="relative">
+      <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">search</span>
+      <input
+        type="text"
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+        placeholder="Search order # or customer"
+        class="pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary focus:border-transparent outline-none w-64"
+      />
+    </div>
+  </div>
+
+  <!-- Filter Tabs -->
+  <div class="flex items-center gap-1 bg-gray-100 p-1 rounded-xl w-fit mb-6 flex-shrink-0">
+    @for (f of filters; track f.key) {
+      <button
+        (click)="activeFilter.set(f.key)"
+        class="px-4 py-2 text-sm font-semibold rounded-lg transition-all cursor-pointer"
+        [class]="activeFilter() === f.key
+          ? 'bg-white shadow-sm text-gray-900'
+          : 'text-gray-500 hover:text-gray-900'"
+      >
+        {{ f.label }}
+        <span class="ml-1 text-xs opacity-60">
+          @switch (f.key) {
+            @case ('all') { ({{ statusCounts().all }}) }
+            @case ('CONFIRMED') { ({{ statusCounts().new }}) }
+            @case ('PREPARING') { ({{ statusCounts().preparing }}) }
+            @case ('READY') { ({{ statusCounts().ready }}) }
+          }
+        </span>
+      </button>
+    }
+  </div>
+
+  <!-- Orders Grid -->
+  <div class="flex-1 overflow-y-auto">
+    @if (loading()) {
+      <div class="flex items-center justify-center h-64">
+        <div class="flex flex-col items-center gap-3">
+          <span class="w-10 h-10 border-3 border-primary/20 border-t-primary rounded-full animate-spin"></span>
+          <span class="text-sm text-gray-500">Loading orders...</span>
+        </div>
+      </div>
+    } @else if (filteredOrders().length === 0) {
+      <div class="flex flex-col items-center justify-center h-64 text-gray-400">
+        <span class="material-symbols-outlined text-5xl mb-3">restaurant</span>
+        <p class="font-semibold">No active orders</p>
+        <p class="text-sm mt-1">New orders will appear here in real-time</p>
+      </div>
+    } @else {
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5">
+        @for (order of filteredOrders(); track order._id) {
+          <div
+            class="flex flex-col bg-white rounded-xl border-t-4 shadow-md overflow-hidden border border-gray-100 transition-all hover:shadow-lg"
+            [class]="getBorderColor(order)"
+          >
+            <!-- Card Header -->
+            <div class="p-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-start">
+              <div>
+                <div class="flex items-center gap-2 mb-1">
+                  <span
+                    class="text-xs font-bold uppercase px-2 py-0.5 rounded"
+                    [class]="getStatusBadgeClass(order.status)"
+                  >
+                    {{ getStatusLabel(order.status) }}
+                  </span>
+                  <span class="text-xs font-bold text-gray-400">#{{ order.orderNumber }}</span>
+                </div>
+                <h3 class="text-lg font-extrabold text-gray-900 leading-tight">
+                  {{ order.customerName || order.phoneNumber }}
+                </h3>
+              </div>
+              <div class="text-right">
+                <span class="text-lg leading-none" [class]="getUrgencyClass(order.createdAt)">
+                  {{ getElapsedDisplay(order.createdAt) }}
+                </span>
+                <p class="text-[10px] font-bold uppercase mt-0.5"
+                   [class]="getElapsedMinutes(order.createdAt) >= 15 ? 'text-red-500' :
+                            getElapsedMinutes(order.createdAt) >= 10 ? 'text-amber-500' : 'text-gray-400'">
+                  @if (order.status === 'READY') {
+                    Ready
+                  } @else if (getElapsedMinutes(order.createdAt) >= 15) {
+                    Urgent
+                  } @else if (getElapsedMinutes(order.createdAt) >= 10) {
+                    Warning
+                  } @else {
+                    Elapsed
+                  }
+                </p>
+              </div>
+            </div>
+
+            <!-- Items -->
+            <div class="p-4 flex-1">
+              <ul class="space-y-3">
+                @for (item of order.items; track item.productId) {
+                  <li class="flex items-start gap-3">
+                    <span class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center font-bold text-gray-900 text-sm flex-shrink-0">
+                      {{ item.quantity }}
+                    </span>
+                    <div class="flex-1 min-w-0">
+                      <p class="font-bold text-gray-900 leading-tight">{{ item.productName }}</p>
+                      @if (item.selectedAddons.length > 0) {
+                        <p class="text-sm text-primary font-medium mt-0.5">
+                          {{ getAddonNames(item.selectedAddons) }}
+                        </p>
+                      }
+                    </div>
+                  </li>
+                }
+              </ul>
+            </div>
+
+            <!-- Action Button -->
+            <div class="p-4 bg-gray-50/30">
+              @if (order.status === 'CONFIRMED' || order.status === 'PAID') {
+                <button
+                  (click)="startPreparing(order)"
+                  class="w-full py-3.5 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary/5 transition-all text-base uppercase tracking-wider cursor-pointer"
+                >
+                  Start Preparing
+                </button>
+              } @else if (order.status === 'PREPARING') {
+                <button
+                  (click)="markReady(order)"
+                  class="w-full py-3.5 bg-primary text-white font-bold rounded-xl shadow-md hover:brightness-110 transition-all text-base uppercase tracking-wider cursor-pointer"
+                >
+                  Mark Ready
+                </button>
+              } @else if (order.status === 'READY') {
+                <button
+                  (click)="markDelivered(order)"
+                  class="w-full py-3.5 bg-blue-500 text-white font-bold rounded-xl shadow-md hover:brightness-110 transition-all text-base uppercase tracking-wider cursor-pointer"
+                >
+                  Complete & Deliver
+                </button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Toast -->
+@if (toast()) {
+  <div
+    class="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-xl shadow-xl text-white text-sm font-medium"
+    [class]="toast()!.type === 'success' ? 'bg-gray-900' : 'bg-red-600'"
+  >
+    <span class="material-symbols-outlined text-lg">
+      {{ toast()!.type === 'success' ? 'check_circle' : 'error' }}
+    </span>
+    {{ toast()!.message }}
+  </div>
+}

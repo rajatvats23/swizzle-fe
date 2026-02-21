@@ -41,3 +41,8 @@ body {
     background-size: 24px 24px;
   }
 }
+
+/* Material Symbols filled variant */
+.material-symbols-outlined.filled {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}

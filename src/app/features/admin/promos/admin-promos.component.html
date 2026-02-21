@@ -1,0 +1,233 @@
+<div class="flex flex-col flex-1 min-h-0 overflow-y-auto">
+
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 flex-shrink-0">
+    <div>
+      <h2 class="text-2xl font-bold text-slate-900">Promocodes &amp; Coupons</h2>
+      <p class="text-sm text-slate-500 mt-0.5">Create and manage discounts for your customers</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="relative">
+        <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xl">search</span>
+        <input type="text" [ngModel]="search()" (ngModelChange)="search.set($event)"
+          placeholder="Search codes..."
+          class="pl-10 pr-4 py-2 bg-slate-100 border-none rounded-lg focus:ring-2 focus:ring-primary/40 text-sm w-56 outline-none" />
+      </div>
+      <button (click)="openCreate()"
+        class="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-bold text-sm transition-all shadow-sm shadow-primary/20">
+        <span class="material-symbols-outlined text-lg">add_circle</span>
+        Add New Code
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6 flex-shrink-0">
+    <div class="bg-white border border-slate-100 p-5 rounded-xl shadow-sm flex items-center justify-between">
+      <div>
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Active Codes</p>
+        <h3 class="text-3xl font-bold text-slate-900">{{ activeCount() }}</h3>
+      </div>
+      <span class="material-symbols-outlined text-primary bg-primary/10 p-2.5 rounded-xl text-2xl">bolt</span>
+    </div>
+    <div class="bg-white border border-slate-100 p-5 rounded-xl shadow-sm flex items-center justify-between">
+      <div>
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Total Redemptions</p>
+        <h3 class="text-3xl font-bold text-slate-900">{{ totalRedemptions() }}</h3>
+      </div>
+      <span class="material-symbols-outlined text-blue-500 bg-blue-50 p-2.5 rounded-xl text-2xl">redeem</span>
+    </div>
+    <div class="bg-white border border-slate-100 p-5 rounded-xl shadow-sm flex items-center justify-between">
+      <div>
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Expiring Soon</p>
+        <h3 class="text-3xl font-bold text-slate-900">{{ expiringSoon() }}</h3>
+        <p class="text-xs text-slate-400 mt-1">Within 7 days</p>
+      </div>
+      <span class="material-symbols-outlined text-amber-500 bg-amber-50 p-2.5 rounded-xl text-2xl">hourglass_bottom</span>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="bg-white border border-slate-100 rounded-xl shadow-sm overflow-hidden flex-1 min-h-0 flex flex-col">
+    <div class="px-6 py-4 border-b border-slate-100 flex-shrink-0">
+      <h4 class="font-bold text-slate-900">All Promocodes</h4>
+    </div>
+
+    @if (loading()) {
+      <div class="flex-1 flex items-center justify-center text-slate-400 gap-3">
+        <span class="material-symbols-outlined animate-spin">progress_activity</span>
+        <span class="text-sm">Loading...</span>
+      </div>
+    } @else if (filteredPromos().length === 0) {
+      <div class="flex-1 flex flex-col items-center justify-center text-slate-400 gap-2 py-16">
+        <span class="material-symbols-outlined text-4xl">sell</span>
+        <p class="text-sm font-medium">No promo codes yet</p>
+        <button (click)="openCreate()" class="text-primary text-sm font-bold mt-1">Create your first code →</button>
+      </div>
+    } @else {
+      <div class="overflow-x-auto flex-1">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-slate-50">
+              <th class="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Code</th>
+              <th class="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Discount</th>
+              <th class="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Validity</th>
+              <th class="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Usage</th>
+              <th class="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
+              <th class="px-6 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-50">
+            @for (p of filteredPromos(); track p._id) {
+              <tr class="hover:bg-slate-50/50 transition-colors group">
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-2">
+                    <span class="font-mono font-bold text-slate-800 bg-slate-100 px-2 py-1 rounded text-sm">{{ p.code }}</span>
+                    <button (click)="copyCode(p.code)" class="opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span class="material-symbols-outlined text-slate-400 text-sm hover:text-primary">content_copy</span>
+                    </button>
+                  </div>
+                  @if (p.description) {
+                    <p class="text-xs text-slate-400 mt-1">{{ p.description }}</p>
+                  }
+                </td>
+                <td class="px-6 py-4 text-sm">
+                  <span class="font-semibold text-slate-700">
+                    @if (p.discountType === 'percentage') {
+                      {{ p.discountValue }}% Off
+                    } @else {
+                      ₹{{ p.discountValue }} Flat
+                    }
+                  </span>
+                  @if (p.minOrderValue > 0) {
+                    <p class="text-xs text-slate-400 mt-0.5">Min ₹{{ p.minOrderValue }}</p>
+                  }
+                </td>
+                <td class="px-6 py-4 text-sm text-slate-500">{{ formatDate(p.expiresAt) }}</td>
+                <td class="px-6 py-4">
+                  <div class="flex items-center gap-3">
+                    <div class="w-24 bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                      <div class="bg-primary h-full rounded-full" [style.width]="usageWidth(p)"></div>
+                    </div>
+                    <span class="text-xs font-bold text-slate-600">
+                      @if (p.maxUses) { {{ p.usedCount }}/{{ p.maxUses }} } @else { {{ p.usedCount }} uses }
+                    </span>
+                  </div>
+                </td>
+                <td class="px-6 py-4">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold" [class]="statusClass(p)">
+                    {{ statusLabel(p) }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-right">
+                  <div class="flex items-center justify-end gap-1 text-slate-400">
+                    <button (click)="toggleActive(p)" class="p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+                      [title]="p.isActive ? 'Deactivate' : 'Activate'">
+                      <span class="material-symbols-outlined text-[18px]" [class]="p.isActive ? 'text-primary' : 'text-slate-400'">
+                        {{ p.isActive ? 'toggle_on' : 'toggle_off' }}
+                      </span>
+                    </button>
+                    <button (click)="openEdit(p)" class="p-1.5 rounded-lg hover:bg-slate-100 hover:text-primary transition-colors">
+                      <span class="material-symbols-outlined text-[18px]">edit</span>
+                    </button>
+                    <button (click)="delete(p)" class="p-1.5 rounded-lg hover:bg-red-50 hover:text-red-500 transition-colors">
+                      <span class="material-symbols-outlined text-[18px]">delete</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+</div>
+
+<!-- Create / Edit Modal -->
+@if (showModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden">
+
+      <!-- Modal Header -->
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+        <h3 class="text-lg font-bold text-slate-900">{{ editingPromo() ? 'Edit Promocode' : 'Add New Promocode' }}</h3>
+        <button (click)="showModal.set(false)" class="text-slate-400 hover:text-slate-600 transition-colors">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-6 space-y-4">
+        @if (error()) {
+          <p class="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{{ error() }}</p>
+        }
+
+        <div class="space-y-1.5">
+          <label class="text-sm font-semibold text-slate-700">Code <span class="text-red-500">*</span></label>
+          <input type="text" [(ngModel)]="form.code" [disabled]="!!editingPromo()"
+            placeholder="e.g. WELCOME50"
+            class="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm font-mono uppercase focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none disabled:bg-slate-50 disabled:text-slate-400" />
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="text-sm font-semibold text-slate-700">Description</label>
+          <input type="text" [(ngModel)]="form.description"
+            placeholder="e.g. Welcome offer for new users"
+            class="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-1.5">
+            <label class="text-sm font-semibold text-slate-700">Discount Type <span class="text-red-500">*</span></label>
+            <select [(ngModel)]="form.discountType"
+              class="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none bg-white">
+              <option value="percentage">Percentage (%)</option>
+              <option value="fixed">Fixed Amount (₹)</option>
+            </select>
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-sm font-semibold text-slate-700">Value <span class="text-red-500">*</span></label>
+            <input type="number" [(ngModel)]="form.discountValue" min="0"
+              [placeholder]="form.discountType === 'percentage' ? '20' : '50'"
+              class="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-1.5">
+            <label class="text-sm font-semibold text-slate-700">Min Order Value (₹)</label>
+            <input type="number" [(ngModel)]="form.minOrderValue" min="0" placeholder="0"
+              class="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none" />
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-sm font-semibold text-slate-700">Max Uses</label>
+            <input type="number" [(ngModel)]="form.maxUses" min="1" placeholder="Unlimited"
+              class="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none" />
+          </div>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="text-sm font-semibold text-slate-700">Expiry Date</label>
+          <input type="date" [(ngModel)]="form.expiresAt"
+            class="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary/40 focus:border-primary outline-none" />
+          <p class="text-xs text-slate-400">Leave empty for no expiry</p>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+        <button (click)="showModal.set(false)"
+          class="px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+          Cancel
+        </button>
+        <button (click)="save()" [disabled]="saving()"
+          class="px-6 py-2 bg-primary text-white rounded-lg font-bold text-sm shadow-sm shadow-primary/20 hover:bg-primary/90 transition-all disabled:opacity-60">
+          {{ saving() ? 'Saving...' : (editingPromo() ? 'Save Changes' : 'Create Code') }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+}
